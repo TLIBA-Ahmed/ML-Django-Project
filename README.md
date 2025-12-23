@@ -41,7 +41,7 @@ Cette application web développée avec **Django** permet d'explorer, d'analyser
 
 1.  **Cloner le projet**
     ```bash
-    git clone [https://github.com/votre-nom/django-ml-app.git](https://github.com/votre-nom/django-ml-app.git)
+    git clone [https://github.com/TLIBA-Ahmed/django-ml-app.git](https://github.com/TLIBA-Ahmed/django-ml-app.git)
     cd django-ml-app
     ```
 
@@ -88,3 +88,4 @@ ml_django_project/
 ├── static/                 # CSS, JS et Images
 ├── manage.py               # Script de gestion Django
 └── requirements.txt        # Liste des bibliothèques Python
+
