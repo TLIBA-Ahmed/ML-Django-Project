@@ -1,0 +1,189 @@
+{% extends 'ml_app/base.html' %}
+
+{% block title %}Analyse de Clustering - ML Application{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="display-5 fw-bold">
+        <i class="fas fa-project-diagram"></i> Analyse de Clustering des Jobs AI
+    </h1>
+    <p class="lead">Visualisation des clusters de jobs basés sur le marché mondial de l'IA</p>
+</div>
+
+{% if error %}
+<div class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle"></i> Une erreur s'est produite lors de l'analyse.
+    <br>Détails: {{ error }}
+</div>
+{% else %}
+
+<!-- Informations sur les données -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="stats-card">
+            <i class="fas fa-database fa-2x mb-2"></i>
+            <h3>{{ data_info.total_jobs }}</h3>
+            <p>Jobs analysés</p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <i class="fas fa-columns fa-2x mb-2"></i>
+            <h3>{{ data_info.features }}</h3>
+            <p>Caractéristiques</p>
+        </div>
+    </div>
+</div>
+
+<!-- Méthode du coude -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <i class="fas fa-chart-line"></i> Méthode du Coude - Détermination du nombre optimal de clusters
+        </h4>
+    </div>
+    <div class="card-body">
+        <p>La méthode du coude permet de déterminer le nombre optimal de clusters en analysant l'inertie.</p>
+        <div class="plot-container">
+            <img src="data:image/png;base64,{{ elbow_plot }}" alt="Elbow Method" class="img-fluid">
+        </div>
+    </div>
+</div>
+
+<!-- Taille des clusters -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <i class="fas fa-chart-pie"></i> Taille et Répartition des Clusters
+        </h4>
+    </div>
+    <div class="card-body">
+        <p>Distribution des jobs dans chaque cluster identifié.</p>
+        <div class="plot-container text-center">
+            <img src="data:image/png;base64,{{ cluster_sizes_plot }}" alt="Taille des Clusters" class="img-fluid" style="max-height: 600px;">
+        </div>
+    </div>
+</div>
+
+<!-- Visualisation des clusters -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <i class="fas fa-eye"></i> Visualisation des Clusters (K-means avec PCA)
+        </h4>
+    </div>
+    <div class="card-body">
+        <p>Projection des jobs sur les deux premières composantes principales avec leurs clusters assignés.</p>
+        <div class="plot-container text-center">
+            <img src="data:image/png;base64,{{ cluster_plot }}" alt="Cluster Visualization" class="img-fluid" style="max-height: 600px;">
+        </div>
+    </div>
+</div>
+
+<!-- Comparaison des profils de clusters -->
+{% if cluster_comparison_plot %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <i class="fas fa-balance-scale"></i> Comparaison des Profils de Clusters
+        </h4>
+    </div>
+    <div class="card-body">
+        <p>Comparaison des valeurs moyennes des features numériques entre les clusters.</p>
+        <div class="plot-container text-center">
+            <img src="data:image/png;base64,{{ cluster_comparison_plot }}" alt="Comparaison des Clusters" class="img-fluid" style="max-height: 700px;">
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Distribution des features par cluster -->
+{% if cluster_distributions_plot %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <i class="fas fa-chart-area"></i> Distribution des Features par Cluster
+        </h4>
+    </div>
+    <div class="card-body">
+        <p>Histogrammes montrant la distribution des features numériques dans chaque cluster.</p>
+        <div class="plot-container text-center">
+            <img src="data:image/png;base64,{{ cluster_distributions_plot }}" alt="Distribution par Cluster" class="img-fluid">
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Profils des clusters -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <i class="fas fa-users"></i> Profils des Clusters
+        </h4>
+    </div>
+    <div class="card-body">
+        <p>Caractéristiques détaillées de chaque cluster identifié.</p>
+        
+        <div class="row">
+            {% for cluster_name, profile in profiles.items %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">{{ cluster_name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong><i class="fas fa-users"></i> Taille:</strong> {{ profile.size }} jobs ({{ profile.percentage }}%)</p>
+                        
+                        {% if profile.salary_usd %}
+                        <hr>
+                        <h6><i class="fas fa-dollar-sign"></i> Salaire (USD)</h6>
+                        <ul class="list-unstyled">
+                            <li>Moyenne: ${{ profile.salary_usd.mean|floatformat:0 }}</li>
+                            <li>Médiane: ${{ profile.salary_usd.median|floatformat:0 }}</li>
+                            <li>Min: ${{ profile.salary_usd.min|floatformat:0 }}</li>
+                            <li>Max: ${{ profile.salary_usd.max|floatformat:0 }}</li>
+                        </ul>
+                        {% endif %}
+                        
+                        {% if profile.years_experience %}
+                        <hr>
+                        <h6><i class="fas fa-briefcase"></i> Années d'expérience</h6>
+                        <ul class="list-unstyled">
+                            <li>Moyenne: {{ profile.years_experience.mean|floatformat:1 }} ans</li>
+                            <li>Médiane: {{ profile.years_experience.median|floatformat:1 }} ans</li>
+                        </ul>
+                        {% endif %}
+                        
+                        <hr>
+                        <h6><i class="fas fa-tags"></i> Caractéristiques dominantes</h6>
+                        <ul class="list-unstyled">
+                            {% if profile.experience_level_dominant %}
+                            <li><strong>Niveau:</strong> {{ profile.experience_level_dominant }}</li>
+                            {% endif %}
+                            {% if profile.company_location_dominant %}
+                            <li><strong>Localisation:</strong> {{ profile.company_location_dominant }}</li>
+                            {% endif %}
+                            {% if profile.company_size_dominant %}
+                            <li><strong>Taille entreprise:</strong> {{ profile.company_size_dominant }}</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Actions -->
+<div class="text-center mb-4">
+    <a href="{% url 'ml_app:clustering_predict' %}" class="btn btn-primary btn-lg">
+        <i class="fas fa-search"></i> Prédire le Cluster d'un Job
+    </a>
+    <a href="{% url 'ml_app:home' %}" class="btn btn-outline-secondary btn-lg">
+        <i class="fas fa-home"></i> Retour à l'accueil
+    </a>
+</div>
+
+{% endif %}
+{% endblock %}

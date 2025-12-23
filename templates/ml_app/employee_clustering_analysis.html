@@ -1,0 +1,118 @@
+{% extends 'ml_app/base.html' %}
+{% load static %}
+
+{% block title %}Analyse - Clustering Employés{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4"><i class="fas fa-users"></i> Analyse: Clustering des Employés (Junior/Senior)</h1>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Statistiques par Cluster -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h4><i class="fas fa-user-graduate"></i> Junior Profile</h4>
+                            <hr>
+                            <p><strong>Nombre:</strong> {{ cluster_stats.Junior.count }} employés</p>
+                            <p><strong>Salaire Moyen:</strong> ${{ cluster_stats.Junior.avg_salary }}</p>
+                            <p><strong>Expérience Moyenne:</strong> {{ cluster_stats.Junior.avg_experience }} ans</p>
+                            <p><strong>Benefits Score Moyen:</strong> {{ cluster_stats.Junior.avg_benefits }}</p>
+                            <p><strong>Remote Ratio Moyen:</strong> {{ cluster_stats.Junior.avg_remote }}%</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h4><i class="fas fa-user-tie"></i> Senior Profile</h4>
+                            <hr>
+                            <p><strong>Nombre:</strong> {{ cluster_stats.Senior.count }} employés</p>
+                            <p><strong>Salaire Moyen:</strong> ${{ cluster_stats.Senior.avg_salary }}</p>
+                            <p><strong>Expérience Moyenne:</strong> {{ cluster_stats.Senior.avg_experience }} ans</p>
+                            <p><strong>Benefits Score Moyen:</strong> {{ cluster_stats.Senior.avg_benefits }}</p>
+                            <p><strong>Remote Ratio Moyen:</strong> {{ cluster_stats.Senior.avg_remote }}%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meilleur Modèle -->
+            <div class="card mb-4 border-success">
+                <div class="card-header bg-success text-white">
+                    <h4><i class="fas fa-trophy"></i> Meilleur Modèle de Clustering: {{ best_model }}</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Total Employés Analysés:</strong> {{ total_employees }}</p>
+                    <div class="row mt-3">
+                        {% for model_name, model_metrics in metrics.items %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card {% if model_name == best_model %}border-success{% endif %}">
+                                <div class="card-body">
+                                    <h5>{{ model_name }} {% if model_name == best_model %}<span class="badge bg-success">Best</span>{% endif %}</h5>
+                                    <p><strong>Unterhomogeneity (SSE):</strong> {{ model_metrics.Unterhomogeneity|floatformat:3 }}</p>
+                                    <p><strong>Untrahomogeneity:</strong> {{ model_metrics.Untrahomogeneity|floatformat:3 }}</p>
+                                    <p><strong>Score:</strong> {{ model_metrics.Score|floatformat:6 }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Optimisation KMeans -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-cog"></i> Optimisation du Nombre de Clusters (KMeans)</h4>
+                </div>
+                <div class="card-body">
+                    <img src="{{ plot_kmeans_optimization }}" class="img-fluid" alt="KMeans Optimization">
+                </div>
+            </div>
+
+            <!-- Profils des Clusters -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h4><i class="fas fa-chart-bar"></i> Profils des Clusters (Heatmap)</h4>
+                </div>
+                <div class="card-body">
+                    <img src="{{ plot_cluster_profiles }}" class="img-fluid" alt="Cluster Profiles">
+                </div>
+            </div>
+
+            <!-- Distribution par Feature -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-white">
+                    <h4><i class="fas fa-chart-area"></i> Distribution des Features par Cluster</h4>
+                </div>
+                <div class="card-body">
+                    <img src="{{ plot_boxplots }}" class="img-fluid" alt="Boxplots">
+                </div>
+            </div>
+
+            <!-- Junior vs Senior -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h4><i class="fas fa-users-cog"></i> Comparaison Junior vs Senior</h4>
+                </div>
+                <div class="card-body">
+                    <img src="{{ plot_named_clusters }}" class="img-fluid" alt="Junior vs Senior">
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

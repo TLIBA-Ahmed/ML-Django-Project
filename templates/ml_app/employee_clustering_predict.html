@@ -1,0 +1,170 @@
+{% extends 'ml_app/base.html' %}
+{% load static %}
+
+{% block title %}Clustering Employé{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="mb-4"><i class="fas fa-user-check"></i> Déterminer le Profil d'Employé</h1>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Valeurs de référence -->
+            {% if cluster_stats %}
+            <div class="card mb-4 bg-light">
+                <div class="card-body">
+                    <h5><i class="fas fa-info-circle"></i> Valeurs de Référence</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Junior:</strong> Salaire moyen ${{ cluster_stats.Junior.avg_salary }}, Expérience {{ cluster_stats.Junior.avg_experience }} ans</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Senior:</strong> Salaire moyen ${{ cluster_stats.Senior.avg_salary }}, Expérience {{ cluster_stats.Senior.avg_experience }} ans</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Formulaire de Prédiction -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-edit"></i> Entrez les Informations de l'Employé</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="salary_usd" class="form-label">Salaire (USD)</label>
+                            <input type="number" class="form-control" id="salary_usd" name="salary_usd" 
+                                   step="0.01" required placeholder="Ex: 75000" 
+                                   value="{% if input_data %}{{ input_data.salary_usd }}{% endif %}">
+                            <div class="form-text">Salaire annuel en dollars américains</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="years_experience" class="form-label">Années d'Expérience</label>
+                            <input type="number" class="form-control" id="years_experience" name="years_experience" 
+                                   step="0.1" required placeholder="Ex: 5.5" 
+                                   value="{% if input_data %}{{ input_data.years_experience }}{% endif %}">
+                            <div class="form-text">Nombre d'années d'expérience professionnelle</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="benefits_score" class="form-label">Score des Avantages</label>
+                            <input type="number" class="form-control" id="benefits_score" name="benefits_score" 
+                                   step="0.1" min="0" max="10" required placeholder="Ex: 7.5" 
+                                   value="{% if input_data %}{{ input_data.benefits_score }}{% endif %}">
+                            <div class="form-text">Score sur 10 des avantages offerts</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="remote_ratio" class="form-label">Ratio de Télétravail (%)</label>
+                            <input type="number" class="form-control" id="remote_ratio" name="remote_ratio" 
+                                   step="1" min="0" max="100" required placeholder="Ex: 50" 
+                                   value="{% if input_data %}{{ input_data.remote_ratio }}{% endif %}">
+                            <div class="form-text">Pourcentage de travail à distance (0-100)</div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search"></i> Déterminer le Profil
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Résultats de la Prédiction -->
+            {% if result %}
+            <div class="card border-{% if result.cluster_name == 'Junior' %}info{% else %}success{% endif %} mb-4">
+                <div class="card-header bg-{% if result.cluster_name == 'Junior' %}info{% else %}success{% endif %} text-white">
+                    <h4><i class="fas fa-check-circle"></i> Résultat du Clustering</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-{% if result.cluster_name == 'Junior' %}info{% else %}success{% endif %}" role="alert">
+                        <h2 class="text-center">
+                            <i class="fas fa-{% if result.cluster_name == 'Junior' %}user-graduate{% else %}user-tie{% endif %}"></i>
+                            Profil: <strong>{{ result.cluster_name }}</strong>
+                        </h2>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5><i class="fas fa-info-circle"></i> Informations Saisies</h5>
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <th>Salaire:</th>
+                                            <td>${{ input_data.salary_usd }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Expérience:</th>
+                                            <td>{{ input_data.years_experience }} ans</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Benefits Score:</th>
+                                            <td>{{ input_data.benefits_score }}/10</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Remote Ratio:</th>
+                                            <td>{{ input_data.remote_ratio }}%</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5><i class="fas fa-chart-pie"></i> Détails du Clustering</h5>
+                                    <p><strong>KMeans Cluster:</strong> {{ result.kmeans_cluster }}</p>
+                                    <p><strong>Agglomerative Cluster:</strong> {{ result.agglomerative_cluster }}</p>
+                                    <p><strong>Classification:</strong> {{ result.cluster_name }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>Interprétation:</h5>
+                        {% if result.cluster_name == 'Junior' %}
+                        <div class="alert alert-info">
+                            <p><strong>Profil Junior:</strong> Ce profil correspond généralement à:</p>
+                            <ul>
+                                <li>Des employés en début de carrière</li>
+                                <li>Une expérience plus limitée</li>
+                                <li>Un salaire dans la fourchette basse à moyenne</li>
+                                <li>Un potentiel de développement important</li>
+                            </ul>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-success">
+                            <p><strong>Profil Senior:</strong> Ce profil correspond généralement à:</p>
+                            <ul>
+                                <li>Des employés expérimentés</li>
+                                <li>Une expertise confirmée dans leur domaine</li>
+                                <li>Un salaire dans la fourchette moyenne à élevée</li>
+                                <li>Des responsabilités accrues</li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

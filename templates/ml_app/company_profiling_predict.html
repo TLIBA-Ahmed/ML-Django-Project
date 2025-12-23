@@ -1,0 +1,185 @@
+{% extends 'ml_app/base.html' %}
+
+{% block title %}Segmentation Entreprise - Prédiction{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                    <h2 class="mb-0 text-white">
+                        <i class="fas fa-building"></i> Prédiction de Segmentation
+                    </h2>
+                    <p class="mb-0 text-white-50">Identifiez le segment d'une entreprise</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="row">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-6">
+            <!-- Formulaire de prédiction -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-edit"></i> Informations de l'entreprise</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="sector_group" class="form-label">Secteur d'activité</label>
+                            <select class="form-select" id="sector_group" name="sector_group" required>
+                                <option value="">Sélectionnez un secteur</option>
+                                {% for sector in sectors %}
+                                <option value="{{ sector }}" {% if input_data.sector_group == sector %}selected{% endif %}>{{ sector }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="company_size" class="form-label">Taille de l'entreprise</label>
+                            <select class="form-select" id="company_size" name="company_size" required>
+                                <option value="">Sélectionnez une taille</option>
+                                {% for size in company_sizes %}
+                                <option value="{{ size }}" {% if input_data.company_size == size %}selected{% endif %}>
+                                    {% if size == 'S' %}Petite (S)
+                                    {% elif size == 'M' %}Moyenne (M)
+                                    {% else %}Grande (L){% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="ai_profile" class="form-label">Profil IA</label>
+                            <select class="form-select" id="ai_profile" name="ai_profile" required>
+                                <option value="">Sélectionnez un profil</option>
+                                {% for profile in ai_profiles %}
+                                <option value="{{ profile }}" {% if input_data.ai_profile == profile %}selected{% endif %}>{{ profile }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Adoption de l'IA dans l'entreprise</small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search"></i> Prédire le Segment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            {% if result %}
+            <!-- Résultats -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-check-circle"></i> Résultat de la Segmentation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h2 class="display-4 text-primary">Cluster {{ result.cluster_id }}</h2>
+                        <p class="lead">Segment identifié</p>
+                    </div>
+
+                    {% if result.cluster_info %}
+                    <h6 class="border-bottom pb-2 mb-3">Profil du Cluster</h6>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body p-2">
+                                    <small class="text-muted">Salaire Moyen</small>
+                                    <h5 class="mb-0">${{ result.cluster_info.salary_usd_mean|floatformat:0 }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body p-2">
+                                    <small class="text-muted">Compétences Moy.</small>
+                                    <h5 class="mb-0">{{ result.cluster_info.nb_skills_mean|floatformat:1 }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body p-2">
+                                    <small class="text-muted">Expérience Moy.</small>
+                                    <h5 class="mb-0">{{ result.cluster_info.year_experience_mean|floatformat:1 }} ans</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body p-2">
+                                    <small class="text-muted">Taille Type</small>
+                                    <h5 class="mb-0">{{ result.cluster_info.company_size }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <p class="mb-1"><strong>Secteur typique:</strong> {{ result.cluster_info.sector_group }}</p>
+                        <p class="mb-0"><strong>Profil IA typique:</strong> 
+                            <span class="badge {% if result.cluster_info.ai_profile == 'High AI' %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ result.cluster_info.ai_profile }}
+                            </span>
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <!-- Instructions -->
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <h5><i class="fas fa-info-circle text-info"></i> Comment utiliser?</h5>
+                    <ol class="mb-0">
+                        <li>Sélectionnez le secteur d'activité de l'entreprise</li>
+                        <li>Choisissez la taille de l'entreprise</li>
+                        <li>Indiquez le niveau d'adoption de l'IA</li>
+                        <li>Cliquez sur "Prédire le Segment"</li>
+                    </ol>
+                    <hr>
+                    <p class="mb-0 small text-muted">
+                        <i class="fas fa-lightbulb"></i> Le modèle K-Means identifie 4 segments d'entreprises
+                        basés sur leur secteur, taille et adoption de l'IA.
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            {% if user.is_superuser %}
+            <a href="{% url 'ml_app:company_profiling_analysis' %}" class="btn btn-outline-primary">
+                <i class="fas fa-chart-bar"></i> Voir l'Analyse Complète
+            </a>
+            {% endif %}
+            <a href="{% url 'ml_app:home' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-home"></i> Retour à l'accueil
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

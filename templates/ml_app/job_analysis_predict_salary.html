@@ -1,0 +1,214 @@
+{% extends 'ml_app/base.html' %}
+
+{% block title %}Prédiction Salaire{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #fa709a, #fee140);">
+                    <h2 class="mb-0 text-white">
+                        <i class="fas fa-dollar-sign"></i> Prédiction de Salaire
+                    </h2>
+                    <p class="mb-0 text-white-50">Estimez le salaire d'un poste</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="row">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-6">
+            <!-- Formulaire -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-edit"></i> Caractéristiques du Poste</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="year_experience" class="form-label">Années d'expérience</label>
+                            <input type="number" class="form-control" id="year_experience" name="year_experience" 
+                                   min="0" max="30" step="0.1" value="{{ input_data.year_experience }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nb_skills" class="form-label">Nombre de compétences</label>
+                            <input type="number" class="form-control" id="nb_skills" name="nb_skills" 
+                                   min="1" max="20" value="{{ input_data.nb_skills }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="job_description_length" class="form-label">Longueur description (caractères)</label>
+                            <input type="number" class="form-control" id="job_description_length" name="job_description_length" 
+                                   min="100" max="3000" value="{{ input_data.job_description_length|default:1000 }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="benefits_score" class="form-label">Score des bénéfices (0-10)</label>
+                            <input type="number" class="form-control" id="benefits_score" name="benefits_score" 
+                                   min="0" max="10" step="0.1" value="{{ input_data.benefits_score }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="company_size" class="form-label">Taille entreprise</label>
+                            <select class="form-select" id="company_size" name="company_size" required>
+                                {% for size in company_sizes %}
+                                <option value="{{ size }}" {% if input_data.company_size == size %}selected{% endif %}>
+                                    {% if size == 'S' %}Petite{% elif size == 'M' %}Moyenne{% else %}Grande{% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="seniority" class="form-label">Niveau</label>
+                            <select class="form-select" id="seniority" name="seniority" required>
+                                {% for sen in seniorities %}
+                                <option value="{{ sen }}" {% if input_data.seniority == sen %}selected{% endif %}>{{ sen }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="ai_profile" class="form-label">Profil IA</label>
+                            <select class="form-select" id="ai_profile" name="ai_profile" required>
+                                {% for profile in ai_profiles %}
+                                <option value="{{ profile }}" {% if input_data.ai_profile == profile %}selected{% endif %}>{{ profile }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="sector_group" class="form-label">Secteur</label>
+                            <select class="form-select" id="sector_group" name="sector_group" required>
+                                {% for sector in sectors %}
+                                <option value="{{ sector }}" {% if input_data.sector_group == sector %}selected{% endif %}>{{ sector }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="company_location" class="form-label">Pays</label>
+                            <select class="form-select" id="company_location" name="company_location" required>
+                                {% for country in countries %}
+                                <option value="{{ country }}" {% if input_data.company_location == country %}selected{% endif %}>{{ country }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="model_type" class="form-label">Modèle</label>
+                            <select class="form-select" id="model_type" name="model_type">
+                                <option value="random_forest">Random Forest</option>
+                                <option value="linear_regression">Régression Linéaire</option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-calculator"></i> Calculer le Salaire
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            {% if result %}
+            <!-- Résultats -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-check-circle"></i> Résultat</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h1 class="display-3 text-success">${{ result.salary_usd|floatformat:0 }}</h1>
+                        <p class="lead">Salaire estimé (USD/an)</p>
+                        <span class="badge bg-info">{{ result.model_used }}</span>
+                    </div>
+
+                    <h6 class="border-bottom pb-2">Détails de la Prédiction</h6>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body p-2">
+                                    <small>Expérience</small>
+                                    <p class="mb-0 fw-bold">{{ input_data.year_experience }} ans</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body p-2">
+                                    <small>Compétences</small>
+                                    <p class="mb-0 fw-bold">{{ input_data.nb_skills }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body p-2">
+                                    <small>Niveau</small>
+                                    <p class="mb-0 fw-bold">{{ input_data.seniority }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body p-2">
+                                    <small>Profil IA</small>
+                                    <p class="mb-0 fw-bold">{{ input_data.ai_profile }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Instructions -->
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <h5><i class="fas fa-info-circle text-info"></i> Comment utiliser?</h5>
+                    <p>Remplissez les informations sur le poste pour obtenir une estimation salariale.</p>
+                    <ul class="mb-0">
+                        <li>Le modèle Random Forest offre généralement de meilleures prédictions</li>
+                        <li>Plus le poste requiert de compétences IA, plus le salaire sera élevé</li>
+                        <li>L'expérience et le secteur influencent fortement le salaire</li>
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            {% if user.is_superuser %}
+            <a href="{% url 'ml_app:job_analysis_analysis' %}" class="btn btn-outline-primary">
+                <i class="fas fa-chart-bar"></i> Voir l'Analyse
+            </a>
+            {% endif %}
+            <a href="{% url 'ml_app:home' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-home"></i> Retour
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

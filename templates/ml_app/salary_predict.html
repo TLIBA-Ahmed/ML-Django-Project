@@ -1,0 +1,228 @@
+{% extends 'ml_app/base.html' %}
+{% load custom_filters %}
+
+{% block title %}Prédiction de Salaire - ML Application{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="display-5 fw-bold">
+        <i class="fas fa-calculator"></i> Prédire un Salaire
+    </h1>
+    <p class="lead">Utilisez nos modèles de Machine Learning pour estimer un salaire</p>
+</div>
+
+{% if predicted_salary %}
+<!-- Résultat de la prédiction -->
+<div class="card mb-4 border-success">
+    <div class="card-header bg-success text-white">
+        <h4 class="mb-0">
+            <i class="fas fa-check-circle"></i> Résultat de la Prédiction
+        </h4>
+    </div>
+    <div class="card-body">
+        <div class="text-center mb-4">
+            <div class="display-1 text-success">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <h2 class="display-3 fw-bold text-success">${{ predicted_salary|floatformat:2 }}</h2>
+            <p class="lead">Salaire annuel estimé</p>
+            <p class="text-muted">Modèle utilisé: <strong>{{ model_used }}</strong></p>
+        </div>
+        
+        <h5><i class="fas fa-info-circle"></i> Informations saisies:</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>Titre du poste:</strong> {{ input_data.Job_Title }}</li>
+                    <li class="list-group-item"><strong>Âge:</strong> {{ input_data.Age }} ans</li>
+                    <li class="list-group-item"><strong>Genre:</strong> {{ input_data.Gender }}</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>Niveau d'éducation:</strong> {{ input_data.Education_Level }}</li>
+                    <li class="list-group-item"><strong>Années d'expérience:</strong> {{ input_data.Years_of_Experience }} ans</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'ml_app:salary_predict' %}" class="btn btn-success">
+                <i class="fas fa-redo"></i> Nouvelle Prédiction
+            </a>
+            <a href="{% url 'ml_app:salary_analysis' %}" class="btn btn-outline-success">
+                <i class="fas fa-chart-bar"></i> Voir l'Analyse Complète
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Formulaire de prédiction -->
+<div class="card">
+    <div class="card-header" style="background: linear-gradient(135deg, #27ae60, #229954);">
+        <h4 class="mb-0">
+            <i class="fas fa-edit"></i> Formulaire de Prédiction
+        </h4>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="job_title" class="form-label">
+                        <i class="fas fa-briefcase"></i> Titre du Poste
+                    </label>
+                    <select class="form-select" id="job_title" name="job_title" required>
+                        <option value="">Sélectionnez...</option>
+                        {% for title in job_titles %}
+                            <option value="{{ title }}">{{ title }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-text text-muted">Sélectionnez le titre du poste dans la liste</small>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="age" class="form-label">
+                        <i class="fas fa-user"></i> Âge
+                    </label>
+                    <input type="number" class="form-control" id="age" name="age" 
+                           placeholder="Ex: 30" min="18" max="70" required>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="gender" class="form-label">
+                        <i class="fas fa-venus-mars"></i> Genre
+                    </label>
+                    <select class="form-select" id="gender" name="gender" required>
+                        <option value="">Sélectionnez...</option>
+                        {% for gender in genders %}
+                            <option value="{{ gender }}">{{ gender }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="years_of_experience" class="form-label">
+                        <i class="fas fa-calendar-alt"></i> Années d'Expérience
+                    </label>
+                    <input type="number" class="form-control" id="years_of_experience" name="years_of_experience" 
+                           placeholder="Ex: 5" min="0" max="50" step="0.5" required>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="education_level" class="form-label">
+                        <i class="fas fa-graduation-cap"></i> Niveau d'Éducation
+                    </label>
+                    <select class="form-select" id="education_level" name="education_level" required>
+                        <option value="">Sélectionnez...</option>
+                        {% for level in education_levels %}
+                            <option value="{{ level }}">{{ level }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="model_name" class="form-label">
+                        <i class="fas fa-robot"></i> Modèle de Prédiction (Optionnel)
+                    </label>
+                    <select class="form-select" id="model_name" name="model_name">
+                        <option value="">Meilleur modèle (automatique)</option>
+                        {% for model in model_names %}
+                            <option value="{{ model }}">{{ model }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-text text-muted">Laissez vide pour utiliser le meilleur modèle</small>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="fas fa-magic"></i> Estimer le Salaire
+                </button>
+                <a href="{% url 'ml_app:home' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour à l'accueil
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Informations supplémentaires -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb"></i> Conseils
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li>Soyez précis dans le titre du poste</li>
+                    <li>Indiquez votre expérience totale dans le domaine</li>
+                    <li>Le niveau d'éducation a un impact significatif</li>
+                    <li>Les prédictions sont basées sur des données historiques</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle"></i> Avertissement
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>Les prédictions sont des estimations basées sur des données historiques et des modèles statistiques. Elles ne constituent pas une garantie et peuvent varier selon:</p>
+                <ul>
+                    <li>Le secteur d'activité</li>
+                    <li>La localisation géographique</li>
+                    <li>La taille de l'entreprise</li>
+                    <li>Les compétences spécifiques</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<style>
+    .select2-container--bootstrap-5 .select2-selection {
+        min-height: calc(1.5em + 0.75rem + 2px);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Initialiser Select2 pour les listes avec beaucoup d'options
+        $('#job_title').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Rechercher un titre de poste...',
+            allowClear: true,
+            width: '100%'
+        });
+        
+        // Listes plus petites - Select2 simple
+        $('#gender, #education_level, #model_name').select2({
+            theme: 'bootstrap-5',
+            minimumResultsForSearch: -1, // Désactiver la recherche
+            width: '100%'
+        });
+    });
+</script>
+{% endblock %}

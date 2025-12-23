@@ -1,0 +1,169 @@
+{% extends 'ml_app/base.html' %}
+{% load static %}
+
+{% block title %}Prédiction d'Expérience{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <h1 class="mb-4"><i class="fas fa-user-clock"></i> Prédiction des Années d'Expérience</h1>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Formulaire de Prédiction -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-edit"></i> Entrez les Informations du Poste</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="industry" class="form-label">Industrie</label>
+                                <select class="form-select" id="industry" name="industry" required>
+                                    <option value="">Sélectionner...</option>
+                                    {% for ind in industries %}
+                                        <option value="{{ ind }}" {% if input_data.industry == ind %}selected{% endif %}>{{ ind }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="education_required" class="form-label">Niveau d'Éducation Requis</label>
+                                <select class="form-select" id="education_required" name="education_required" required>
+                                    <option value="">Sélectionner...</option>
+                                    {% for edu in education_levels %}
+                                        <option value="{{ edu }}" {% if input_data.education_required == edu %}selected{% endif %}>{{ edu }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="required_skills" class="form-label">Compétences Requises</label>
+                                <select class="form-select" id="required_skills" name="required_skills" required>
+                                    <option value="">Sélectionner...</option>
+                                    {% for skill in skills %}
+                                        <option value="{{ skill }}" {% if input_data.required_skills == skill %}selected{% endif %}>{{ skill }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="employment_type" class="form-label">Type d'Emploi</label>
+                                <select class="form-select" id="employment_type" name="employment_type" required>
+                                    <option value="">Sélectionner...</option>
+                                    {% for emp_type in employment_types %}
+                                        <option value="{{ emp_type }}" {% if input_data.employment_type == emp_type %}selected{% endif %}>{{ emp_type }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="experience_level" class="form-label">Niveau d'Expérience</label>
+                                <select class="form-select" id="experience_level" name="experience_level" required>
+                                    <option value="">Sélectionner...</option>
+                                    {% for exp_level in experience_levels %}
+                                        <option value="{{ exp_level }}" {% if input_data.experience_level == exp_level %}selected{% endif %}>{{ exp_level }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="company_size" class="form-label">Taille de l'Entreprise</label>
+                                <select class="form-select" id="company_size" name="company_size" required>
+                                    <option value="">Sélectionner...</option>
+                                    {% for size in company_sizes %}
+                                        <option value="{{ size }}" {% if input_data.company_size == size %}selected{% endif %}>{{ size }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-calculator"></i> Prédire les Années d'Expérience
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Résultats de la Prédiction -->
+            {% if result %}
+            <div class="card border-success mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4><i class="fas fa-check-circle"></i> Résultats de la Prédiction</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success" role="alert">
+                        <h3 class="text-center">
+                            <i class="fas fa-graduation-cap"></i> 
+                            Années d'Expérience Estimées: <strong>{{ result.best_prediction }} ans</strong>
+                        </h3>
+                        <p class="text-center mb-0">Modèle utilisé: {{ result.best_model }}</p>
+                    </div>
+                    
+                    <h5 class="mt-4">Prédictions par Modèle:</h5>
+                    <div class="row">
+                        {% for model_name, pred_value in result.predictions.items %}
+                        <div class="col-md-3 mb-3">
+                            <div class="card {% if model_name == result.best_model %}border-success{% endif %}">
+                                <div class="card-body text-center">
+                                    <h6>{{ model_name }}</h6>
+                                    <h4>{{ pred_value }} ans</h4>
+                                    {% if model_name == result.best_model %}
+                                        <span class="badge bg-success">Meilleur</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>Informations Saisies:</h5>
+                        <table class="table table-sm table-bordered">
+                            <tr>
+                                <th>Industrie</th>
+                                <td>{{ input_data.industry }}</td>
+                            </tr>
+                            <tr>
+                                <th>Éducation</th>
+                                <td>{{ input_data.education_required }}</td>
+                            </tr>
+                            <tr>
+                                <th>Compétences</th>
+                                <td>{{ input_data.required_skills }}</td>
+                            </tr>
+                            <tr>
+                                <th>Type d'Emploi</th>
+                                <td>{{ input_data.employment_type }}</td>
+                            </tr>
+                            <tr>
+                                <th>Niveau d'Expérience</th>
+                                <td>{{ input_data.experience_level }}</td>
+                            </tr>
+                            <tr>
+                                <th>Taille Entreprise</th>
+                                <td>{{ input_data.company_size }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

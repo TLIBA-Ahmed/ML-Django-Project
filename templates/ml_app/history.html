@@ -1,0 +1,397 @@
+{% extends 'ml_app/base.html' %}
+
+{% block title %}Historique - ML Application{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="display-5 fw-bold">
+        <i class="fas fa-history"></i> Historique des Prédictions
+    </h1>
+    <p class="lead">Consultez l'historique de toutes les prédictions effectuées</p>
+</div>
+
+<!-- Statistiques globales -->
+<div class="row mb-4">
+    <div class="col-md-2">
+        <div class="stats-card">
+            <i class="fas fa-dollar-sign fa-2x mb-2"></i>
+            <h3>{{ salary_predictions.count }}</h3>
+            <p>Salaires</p>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <i class="fas fa-project-diagram fa-2x mb-2"></i>
+            <h3>{{ job_predictions.count }}</h3>
+            <p>Clusters</p>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stats-card" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+            <i class="fas fa-sitemap fa-2x mb-2"></i>
+            <h3>{{ platform_predictions.count }}</h3>
+            <p>Plateformes</p>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stats-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+            <i class="fas fa-briefcase fa-2x mb-2"></i>
+            <h3>{{ job_title_predictions.count }}</h3>
+            <p>Postes</p>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stats-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+            <i class="fas fa-user-clock fa-2x mb-2"></i>
+            <h3>{{ experience_predictions.count }}</h3>
+            <p>Expérience</p>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <i class="fas fa-users-cog fa-2x mb-2"></i>
+            <h3>{{ employee_cluster_predictions.count }}</h3>
+            <p>Profils</p>
+        </div>
+    </div>
+</div>
+
+<!-- Prédictions de Salaire -->
+<div class="card mb-4">
+    <div class="card-header" style="background: linear-gradient(135deg, #27ae60, #229954);">
+        <h4 class="mb-0">
+            <i class="fas fa-dollar-sign"></i> Historique des Prédictions de Salaire
+        </h4>
+    </div>
+    <div class="card-body">
+        {% if salary_predictions %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Poste</th>
+                        <th>Âge</th>
+                        <th>Expérience</th>
+                        <th>Éducation</th>
+                        <th>Salaire Prédit</th>
+                        <th>Modèle</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pred in salary_predictions %}
+                    <tr>
+                        <td>{{ pred.created_at|date:"d/m/Y H:i" }}</td>
+                        <td><strong>{{ pred.job_title }}</strong></td>
+                        <td>{{ pred.age }}</td>
+                        <td>{{ pred.years_of_experience }} ans</td>
+                        <td>{{ pred.education_level }}</td>
+                        <td class="text-success fw-bold">${{ pred.predicted_salary|floatformat:2 }}</td>
+                        <td><span class="badge bg-primary">{{ pred.model_used }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Aucune prédiction de salaire n'a été effectuée pour le moment.
+            <a href="{% url 'ml_app:salary_predict' %}" class="alert-link">Faire une prédiction</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Prédictions de Cluster -->
+<div class="card mb-4">
+    <div class="card-header" style="background: linear-gradient(135deg, #3498db, #2980b9);">
+        <h4 class="mb-0">
+            <i class="fas fa-project-diagram"></i> Historique des Prédictions de Cluster
+        </h4>
+    </div>
+    <div class="card-body">
+        {% if job_predictions %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Poste</th>
+                        <th>Salaire (USD)</th>
+                        <th>Expérience</th>
+                        <th>Localisation</th>
+                        <th>Taille</th>
+                        <th>Cluster</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pred in job_predictions %}
+                    <tr>
+                        <td>{{ pred.created_at|date:"d/m/Y H:i" }}</td>
+                        <td><strong>{{ pred.job_title }}</strong></td>
+                        <td>${{ pred.salary_usd|floatformat:0 }}</td>
+                        <td>{{ pred.experience_level }} ({{ pred.years_experience }} ans)</td>
+                        <td>{{ pred.company_location }}</td>
+                        <td>{{ pred.company_size }}</td>
+                        <td><span class="badge bg-info">Cluster {{ pred.predicted_cluster }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Aucune prédiction de cluster n'a été effectuée pour le moment.
+            <a href="{% url 'ml_app:clustering_predict' %}" class="alert-link">Faire une prédiction</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Prédictions de Plateforme -->
+<div class="card mb-4">
+    <div class="card-header" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+        <h4 class="mb-0">
+            <i class="fas fa-sitemap"></i> Historique des Prédictions de Plateforme
+        </h4>
+    </div>
+    <div class="card-body">
+        {% if platform_predictions %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Job Simplifié</th>
+                        <th>Pays</th>
+                        <th>Entreprise</th>
+                        <th>Plateforme</th>
+                        <th>Confiance</th>
+                        <th>Modèle</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pred in platform_predictions %}
+                    <tr>
+                        <td>{{ pred.created_at|date:"d/m/Y H:i" }}</td>
+                        <td><strong>{{ pred.job_title_simplified }}</strong></td>
+                        <td>{{ pred.job_country }}</td>
+                        <td>{{ pred.company_name|truncatechars:30 }}</td>
+                        <td class="text-primary fw-bold">{{ pred.predicted_platform }}</td>
+                        <td>
+                            <div class="progress" style="height: 20px; width: 100px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ pred.confidence }}%"
+                                     aria-valuenow="{{ pred.confidence }}" aria-valuemin="0" aria-valuemax="100">
+                                    {{ pred.confidence|floatformat:1 }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-info">{{ pred.model_used }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Aucune prédiction de plateforme n'a été effectuée pour le moment.
+            <a href="{% url 'ml_app:classification_predict' %}" class="alert-link">Faire une prédiction</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Prédictions de Type de Poste (NEW) -->
+<div class="card mb-4">
+    <div class="card-header" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+        <h4 class="mb-0">
+            <i class="fas fa-briefcase"></i> Historique des Prédictions de Type de Poste
+        </h4>
+    </div>
+    <div class="card-body">
+        {% if job_title_predictions %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Type de Contrat</th>
+                        <th>Secteur</th>
+                        <th>Plateforme</th>
+                        <th>Compétences</th>
+                        <th>Type de Poste Prédit</th>
+                        <th>Confiance</th>
+                        <th>Modèle</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pred in job_title_predictions %}
+                    <tr>
+                        <td>{{ pred.created_at|date:"d/m/Y H:i" }}</td>
+                        <td>{{ pred.job_schedule_type }}</td>
+                        <td>{{ pred.sector|truncatewords:3 }}</td>
+                        <td>{{ pred.job_via }}</td>
+                        <td>{{ pred.job_skills }}</td>
+                        <td class="text-primary fw-bold">{{ pred.predicted_job_title }}</td>
+                        <td>
+                            {% if pred.confidence %}
+                                <span class="badge bg-success">{{ pred.confidence|floatformat:1 }}%</span>
+                            {% else %}
+                                <span class="badge bg-secondary">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-primary">{{ pred.model_used }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Aucune prédiction de type de poste n'a été effectuée pour le moment.
+            <a href="{% url 'ml_app:job_title_predict' %}" class="alert-link">Faire une prédiction</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Prédictions d'Expérience (NEW) -->
+<div class="card mb-4">
+    <div class="card-header" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+        <h4 class="mb-0">
+            <i class="fas fa-user-clock"></i> Historique des Prédictions d'Expérience
+        </h4>
+    </div>
+    <div class="card-body">
+        {% if experience_predictions %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Industrie</th>
+                        <th>Éducation</th>
+                        <th>Type d'Emploi</th>
+                        <th>Années Prédites</th>
+                        <th>Modèle</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pred in experience_predictions %}
+                    <tr>
+                        <td>{{ pred.created_at|date:"d/m/Y H:i:s" }}</td>
+                        <td><span class="badge bg-info">{{ pred.industry }}</span></td>
+                        <td>{{ pred.education_required }}</td>
+                        <td>{{ pred.employment_type }}</td>
+                        <td><strong>{{ pred.predicted_years }} ans</strong></td>
+                        <td><span class="badge bg-success">{{ pred.model_used }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Aucune prédiction d'expérience n'a été effectuée.
+            <a href="{% url 'ml_app:experience_predict' %}" class="alert-link">Faire une prédiction</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Prédictions de Profil d'Employé (NEW) -->
+<div class="card mb-4">
+    <div class="card-header" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+        <h4 class="mb-0">
+            <i class="fas fa-users-cog"></i> Historique des Profils d'Employés
+        </h4>
+    </div>
+    <div class="card-body">
+        {% if employee_cluster_predictions %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Salaire</th>
+                        <th>Expérience</th>
+                        <th>Benefits Score</th>
+                        <th>Remote Ratio</th>
+                        <th>Profil</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pred in employee_cluster_predictions %}
+                    <tr>
+                        <td>{{ pred.created_at|date:"d/m/Y H:i:s" }}</td>
+                        <td>${{ pred.salary_usd|floatformat:0 }}</td>
+                        <td>{{ pred.years_experience }} ans</td>
+                        <td>{{ pred.benefits_score }}/10</td>
+                        <td>{{ pred.remote_ratio }}%</td>
+                        <td>
+                            {% if pred.predicted_cluster == 'Junior' %}
+                                <span class="badge bg-info"><i class="fas fa-user-graduate"></i> Junior</span>
+                            {% else %}
+                                <span class="badge bg-success"><i class="fas fa-user-tie"></i> Senior</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Aucun profil d'employé n'a été déterminé.
+            <a href="{% url 'ml_app:employee_clustering_predict' %}" class="alert-link">Déterminer un profil</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Analyses de Clustering -->
+<div class="card mb-4">
+    <div class="card-header" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+        <h4 class="mb-0">
+            <i class="fas fa-chart-bar"></i> Historique des Analyses de Clustering
+        </h4>
+    </div>
+    <div class="card-body">
+        {% if clustering_results %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Algorithme</th>
+                        <th>Nombre de Clusters</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in clustering_results %}
+                    <tr>
+                        <td>{{ result.created_at|date:"d/m/Y H:i:s" }}</td>
+                        <td><span class="badge bg-secondary">{{ result.algorithm }}</span></td>
+                        <td>{{ result.n_clusters }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Aucune analyse de clustering n'a été effectuée pour le moment.
+            <a href="{% url 'ml_app:clustering_analysis' %}" class="alert-link">Lancer une analyse</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Actions -->
+<div class="text-center mb-4">
+    <a href="{% url 'ml_app:home' %}" class="btn btn-primary btn-lg">
+        <i class="fas fa-home"></i> Retour à l'accueil
+    </a>
+</div>
+{% endblock %}

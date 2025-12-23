@@ -1,0 +1,271 @@
+{% extends 'ml_app/base.html' %}
+{% load custom_filters %}
+
+{% block title %}Analyse - Classification des Types de Postes{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0"><i class="fas fa-briefcase"></i> Classification des Types de Postes</h2>
+            </div>
+            <div class="card-body">
+                <p class="lead">
+                    Cette analyse prédit le type de poste (Data Analyst, Data Scientist, Data Engineer, etc.) 
+                    basé sur les caractéristiques du job comme le type de contrat, le secteur, la plateforme de recrutement, 
+                    et le nombre de compétences requises.
+                </p>
+                {% if error %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> Erreur: {{ error }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if data_info %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <h3>{{ data_info.total_jobs }}</h3>
+            <p>Jobs analysés</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <h3>{{ data_info.n_classes }}</h3>
+            <p>Types de postes</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <h3>{{ data_info.features_used|length }}</h3>
+            <p>Features utilisées</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+            <h3>{{ best_model }}</h3>
+            <p>Meilleur modèle</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if results %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-chart-bar"></i> Performance des Modèles</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Modèle</th>
+                                <th>Accuracy</th>
+                                <th>F1-Score</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for model, metrics in results.items %}
+                            <tr>
+                                <td><strong>{{ model }}</strong></td>
+                                <td>
+                                    <span class="badge bg-info">{{ metrics.Accuracy|floatformat:4 }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">{{ metrics.F1_Score|floatformat:4 }}</span>
+                                </td>
+                                <td>
+                                    {% if model == best_model %}
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="fas fa-crown"></i> Meilleur
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Standard</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if comparison_plot %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-chart-line"></i> Comparaison des Modèles</h4>
+            </div>
+            <div class="card-body">
+                <div class="plot-container">
+                    <img src="data:image/png;base64,{{ comparison_plot }}" alt="Comparaison des modèles" class="img-fluid">
+                </div>
+                <p class="text-muted mt-3">
+                    <i class="fas fa-info-circle"></i> Cette visualisation compare les performances de tous les modèles 
+                    en termes d'Accuracy et de F1-Score.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if confusion_matrix_plot %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-table"></i> Matrice de Confusion</h4>
+            </div>
+            <div class="card-body">
+                <div class="plot-container">
+                    <img src="data:image/png;base64,{{ confusion_matrix_plot }}" alt="Matrice de confusion" class="img-fluid">
+                </div>
+                <p class="text-muted mt-3">
+                    <i class="fas fa-info-circle"></i> La matrice de confusion montre les prédictions correctes (diagonale) 
+                    et les erreurs de classification pour chaque type de poste.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if class_distribution_plot %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-balance-scale"></i> Distribution des Classes (SMOTE)</h4>
+            </div>
+            <div class="card-body">
+                <div class="plot-container">
+                    <img src="data:image/png;base64,{{ class_distribution_plot }}" alt="Distribution des classes" class="img-fluid">
+                </div>
+                <p class="text-muted mt-3">
+                    <i class="fas fa-info-circle"></i> SMOTE (Synthetic Minority Over-sampling Technique) équilibre les classes 
+                    en générant des exemples synthétiques pour les classes minoritaires.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if knn_k_values_plot %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-search"></i> Optimisation KNN (k-values)</h4>
+            </div>
+            <div class="card-body">
+                <div class="plot-container">
+                    <img src="data:image/png;base64,{{ knn_k_values_plot }}" alt="KNN k-values" class="img-fluid">
+                </div>
+                <p class="text-muted mt-3">
+                    <i class="fas fa-info-circle"></i> Ce graphique montre comment le F1-score varie en fonction 
+                    du nombre de voisins (k) dans l'algorithme KNN.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if roc_curves_plot %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-chart-area"></i> Courbes ROC</h4>
+            </div>
+            <div class="card-body">
+                <div class="plot-container">
+                    <img src="data:image/png;base64,{{ roc_curves_plot }}" alt="Courbes ROC" class="img-fluid">
+                </div>
+                <p class="text-muted mt-3">
+                    <i class="fas fa-info-circle"></i> Les courbes ROC (Receiver Operating Characteristic) montrent 
+                    la capacité de chaque modèle à distinguer les différentes classes.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if decision_tree_plot %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-sitemap"></i> Visualisation de l'Arbre de Décision</h4>
+            </div>
+            <div class="card-body">
+                <div class="plot-container">
+                    <img src="data:image/png;base64,{{ decision_tree_plot }}" alt="Arbre de décision" class="img-fluid">
+                </div>
+                <p class="text-muted mt-3">
+                    <i class="fas fa-info-circle"></i> Cette visualisation montre comment l'arbre de décision 
+                    classe les différents types de postes en posant des questions successives sur les features.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if data_info %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-info-circle"></i> Informations sur les Données</h4>
+            </div>
+            <div class="card-body">
+                <h5>Features utilisées:</h5>
+                <ul>
+                    {% for feature in data_info.features_used %}
+                        <li><code>{{ feature }}</code></li>
+                    {% endfor %}
+                </ul>
+                
+                <h5 class="mt-4">Types de postes ({{ data_info.n_classes }} classes):</h5>
+                <div class="row">
+                    {% for class_name in data_info.classes %}
+                        <div class="col-md-4 mb-2">
+                            <span class="badge bg-primary p-2" style="font-size: 0.9rem;">
+                                {{ forloop.counter0 }}: {{ class_name }}
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-12 text-center">
+        <a href="{% url 'ml_app:job_title_predict' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-magic"></i> Faire une Prédiction
+        </a>
+    </div>
+</div>
+
+{% endblock %}

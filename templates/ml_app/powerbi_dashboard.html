@@ -1,0 +1,84 @@
+{% extends 'ml_app/base.html' %}
+
+{% block title %}Dashboard Power BI{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #F2C94C, #F2994A);">
+                    <h2 class="mb-0 text-white">
+                        <i class="fas fa-chart-line"></i> Dashboard Power BI
+                    </h2>
+                    <p class="mb-0 text-white-50">Visualisations et analyses interactives</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    {% if powerbi_embed_url %}
+                        <!-- Power BI Embed Container -->
+                        <div class="powerbi-container" style="height: 85vh; min-height: 700px; position: relative; overflow: hidden;">
+                            <iframe 
+                                width="100%" 
+                                height="100%" 
+                                src="{{ powerbi_embed_url }}" 
+                                frameborder="0" 
+                                allowFullScreen="true"
+                                style="border: none; display: block; position: absolute; top: 0; left: 0;">
+                            </iframe>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning m-4" role="alert">
+                            <h4 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Configuration requise</h4>
+                            <p>L'URL du dashboard Power BI n'est pas encore configurée.</p>
+                            <hr>
+                            <p class="mb-0">
+                                <strong>Pour configurer :</strong>
+                            </p>
+                            <ol class="mt-2">
+                                <li>Copiez l'URL d'intégration de votre dashboard Power BI</li>
+                                <li>Ajoutez-la dans <code>settings.py</code> :
+                                    <pre class="mt-2 bg-light p-2"><code>POWERBI_EMBED_URL = "votre_url_ici"</code></pre>
+                                </li>
+                            </ol>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-info-circle text-info"></i> Comment utiliser ce dashboard</h5>
+                    <ul class="mb-0">
+                        <li>Utilisez les filtres interactifs pour affiner les données</li>
+                        <li>Cliquez sur les visualisations pour explorer en détail</li>
+                        <li>Survolez les éléments pour voir plus d'informations</li>
+                        <li>Utilisez le mode plein écran pour une meilleure expérience</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.powerbi-container {
+    background: #f8f9fa;
+}
+
+.powerbi-container iframe {
+    border: none;
+}
+</style>
+{% endblock %}

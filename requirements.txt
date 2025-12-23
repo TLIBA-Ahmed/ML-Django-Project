@@ -1,0 +1,31 @@
+# Django et serveur web
+Django>=5.0
+gunicorn>=21.0
+
+# Machine Learning et Data Science
+scikit-learn>=1.3
+pandas>=2.0
+numpy>=1.24
+scipy>=1.11
+xgboost>=3.0
+imbalanced-learn>=0.14
+category-encoders>=2.9
+
+# Visualisation
+matplotlib>=3.8
+seaborn>=0.13
+
+# Dataset handling
+kagglehub>=0.2
+
+# RAG Chatbot dependencies
+transformers>=4.36
+sentence-transformers>=2.2
+faiss-cpu>=1.7
+langchain>=0.1
+langchain-text-splitters>=0.0.1
+google-generativeai>=0.3
+
+# Utilitaires
+python-dateutil>=2.8
+pytz>=2024.1

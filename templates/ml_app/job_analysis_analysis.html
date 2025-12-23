@@ -1,0 +1,155 @@
+{% extends 'ml_app/base.html' %}
+{% load custom_filters %}
+
+{% block title %}Analyse Emplois - Régression & Classification{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #fa709a, #fee140);">
+                    <h2 class="mb-0 text-white">
+                        <i class="fas fa-briefcase"></i> Analyse des Emplois
+                    </h2>
+                    <p class="mb-0 text-white-50">Régression des salaires & Classification des profils IA</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="row">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Métriques de Régression -->
+    {% if regression_metrics %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="border-bottom pb-2"><i class="fas fa-chart-line text-primary"></i> Prédiction des Salaires (Régression)</h4>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-brain fa-2x text-info mb-2"></i>
+                    <h6>Linear Regression</h6>
+                    <h4 class="text-info">R² = {{ regression_metrics.linear_regression.r2|floatformat:4 }}</h4>
+                    <small class="text-muted">MSE: {{ regression_metrics.linear_regression.mse|floatformat:4 }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-tree fa-2x text-success mb-2"></i>
+                    <h6>Random Forest</h6>
+                    <h4 class="text-success">R² = {{ regression_metrics.random_forest.r2|floatformat:4 }}</h4>
+                    <small class="text-muted">MSE: {{ regression_metrics.random_forest.mse|floatformat:4 }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visualisations Régression -->
+    <div class="row mb-4">
+        {% if plot_regression %}
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-scatter"></i> Comparaison des Modèles de Régression</h5>
+                </div>
+                <div class="card-body text-center">
+                    <img src="{{ plot_regression }}" alt="Regression Comparison" class="img-fluid" style="max-width: 100%;">
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if plot_importance %}
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-star"></i> Importance des Features (Random Forest)</h5>
+                </div>
+                <div class="card-body text-center">
+                    <img src="{{ plot_importance }}" alt="Feature Importance" class="img-fluid" style="max-width: 100%;">
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Métriques de Classification -->
+    {% if classification_metrics %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="border-bottom pb-2"><i class="fas fa-tags text-warning"></i> Prédiction du Profil IA (Classification)</h4>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-bullseye fa-3x text-warning mb-2"></i>
+                    <h6>Accuracy</h6>
+                    <h3 class="text-warning">{{ classification_metrics.accuracy|floatformat:4 }}</h3>
+                    <small class="text-muted">Random Forest Classifier</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visualisations Classification -->
+    <div class="row mb-4">
+        {% if plot_confusion %}
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-th"></i> Matrice de Confusion</h5>
+                </div>
+                <div class="card-body text-center">
+                    <img src="{{ plot_confusion }}" alt="Confusion Matrix" class="img-fluid" style="max-width: 100%;">
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if plot_classification %}
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Rapport de Classification</h5>
+                </div>
+                <div class="card-body text-center">
+                    <img src="{{ plot_classification }}" alt="Classification Report" class="img-fluid" style="max-width: 100%;">
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <a href="{% url 'ml_app:job_analysis_predict_salary' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-dollar-sign"></i> Prédire un Salaire
+            </a>
+            <a href="{% url 'ml_app:job_analysis_predict_ai_profile' %}" class="btn btn-warning btn-lg">
+                <i class="fas fa-robot"></i> Prédire un Profil IA
+            </a>
+            <a href="{% url 'ml_app:home' %}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-home"></i> Retour à l'accueil
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

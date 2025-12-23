@@ -1,0 +1,209 @@
+{% extends 'ml_app/base.html' %}
+
+{% block title %}Prédiction Profil IA{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #fa709a, #fee140);">
+                    <h2 class="mb-0 text-white">
+                        <i class="fas fa-robot"></i> Prédiction Profil IA
+                    </h2>
+                    <p class="mb-0 text-white-50">Déterminez si un poste nécessite des compétences IA</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="row">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-6">
+            <!-- Formulaire -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-edit"></i> Caractéristiques du Poste</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="salary_usd" class="form-label">Salaire (USD/an)</label>
+                            <input type="number" class="form-control" id="salary_usd" name="salary_usd" 
+                                   min="20000" max="250000" value="{{ input_data.salary_usd }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="year_experience" class="form-label">Années d'expérience</label>
+                            <input type="number" class="form-control" id="year_experience" name="year_experience" 
+                                   min="0" max="30" step="0.1" value="{{ input_data.year_experience }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nb_skills" class="form-label">Nombre de compétences</label>
+                            <input type="number" class="form-control" id="nb_skills" name="nb_skills" 
+                                   min="1" max="20" value="{{ input_data.nb_skills }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="job_description_length" class="form-label">Longueur description (caractères)</label>
+                            <input type="number" class="form-control" id="job_description_length" name="job_description_length" 
+                                   min="100" max="3000" value="{{ input_data.job_description_length|default:1000 }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="benefits_score" class="form-label">Score des bénéfices (0-10)</label>
+                            <input type="number" class="form-control" id="benefits_score" name="benefits_score" 
+                                   min="0" max="10" step="0.1" value="{{ input_data.benefits_score }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="company_size" class="form-label">Taille entreprise</label>
+                            <select class="form-select" id="company_size" name="company_size" required>
+                                {% for size in company_sizes %}
+                                <option value="{{ size }}" {% if input_data.company_size == size %}selected{% endif %}>
+                                    {% if size == 'S' %}Petite{% elif size == 'M' %}Moyenne{% else %}Grande{% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="seniority" class="form-label">Niveau</label>
+                            <select class="form-select" id="seniority" name="seniority" required>
+                                {% for sen in seniorities %}
+                                <option value="{{ sen }}" {% if input_data.seniority == sen %}selected{% endif %}>{{ sen }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="sector_group" class="form-label">Secteur</label>
+                            <select class="form-select" id="sector_group" name="sector_group" required>
+                                {% for sector in sectors %}
+                                <option value="{{ sector }}" {% if input_data.sector_group == sector %}selected{% endif %}>{{ sector }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="company_location" class="form-label">Pays</label>
+                            <select class="form-select" id="company_location" name="company_location" required>
+                                {% for country in countries %}
+                                <option value="{{ country }}" {% if input_data.company_location == country %}selected{% endif %}>{{ country }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="fas fa-robot"></i> Classifier le Profil
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            {% if result %}
+            <!-- Résultats -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header {% if result.ai_profile == 'High AI' %}bg-success{% else %}bg-secondary{% endif %} text-white">
+                    <h5 class="mb-0"><i class="fas fa-check-circle"></i> Résultat</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h1 class="display-4 {% if result.ai_profile == 'High AI' %}text-success{% else %}text-secondary{% endif %}">
+                            {{ result.ai_profile }}
+                        </h1>
+                        <p class="lead">Profil du poste</p>
+                        <div class="progress mb-2" style="height: 30px;">
+                            <div class="progress-bar {% if result.ai_profile == 'High AI' %}bg-success{% else %}bg-secondary{% endif %}" 
+                                 style="width: {{ result.confidence|floatformat:0 }}%">
+                                {{ result.confidence|floatformat:1 }}%
+                            </div>
+                        </div>
+                        <small class="text-muted">Confiance du modèle</small>
+                    </div>
+
+                    <h6 class="border-bottom pb-2">Probabilités</h6>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>High AI</span>
+                            <strong>{{ result.probabilities.0|floatformat:1 }}%</strong>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" style="width: {{ result.probabilities.0|floatformat:0 }}%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Low AI</span>
+                            <strong>{{ result.probabilities.1|floatformat:1 }}%</strong>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-secondary" style="width: {{ result.probabilities.1|floatformat:0 }}%"></div>
+                        </div>
+                    </div>
+
+                    <h6 class="border-bottom pb-2 mt-4">Interprétation</h6>
+                    {% if result.ai_profile == 'High AI' %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> Ce poste requiert des compétences en Intelligence Artificielle.
+                        Les candidats devraient maîtriser des technologies comme Machine Learning, Deep Learning, NLP, etc.
+                    </div>
+                    {% else %}
+                    <div class="alert alert-secondary">
+                        <i class="fas fa-info-circle"></i> Ce poste ne nécessite pas de compétences IA avancées.
+                        Les compétences traditionnelles du secteur sont suffisantes.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <!-- Instructions -->
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <h5><i class="fas fa-info-circle text-info"></i> Comment utiliser?</h5>
+                    <p>Entrez les caractéristiques du poste pour déterminer s'il nécessite des compétences en IA.</p>
+                    <div class="alert alert-info mb-0">
+                        <strong>High AI:</strong> Postes nécessitant des compétences en Machine Learning, Deep Learning, 
+                        NLP, Computer Vision, etc.
+                        <hr>
+                        <strong>Low AI:</strong> Postes ne nécessitant pas de compétences IA avancées.
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            {% if user.is_superuser %}
+            <a href="{% url 'ml_app:job_analysis_analysis' %}" class="btn btn-outline-primary">
+                <i class="fas fa-chart-bar"></i> Voir l'Analyse
+            </a>
+            {% endif %}
+            <a href="{% url 'ml_app:home' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-home"></i> Retour
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,225 @@
+{% extends 'ml_app/base.html' %}
+
+{% block title %}Prédiction - Type de Poste{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0"><i class="fas fa-magic"></i> Prédiction du Type de Poste</h2>
+            </div>
+            <div class="card-body">
+                <p class="lead">
+                    Entrez les caractéristiques d'un job pour prédire son type de poste 
+                    (Data Analyst, Data Scientist, Data Engineer, etc.)
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if predicted_job_title %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-check-circle"></i> Résultat de la Prédiction</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3 class="text-success">
+                            <i class="fas fa-briefcase"></i> Type de poste prédit:
+                        </h3>
+                        <h2 class="display-4">{{ predicted_job_title }}</h2>
+                    </div>
+                    <div class="col-md-6">
+                        {% if confidence %}
+                        <h5>Confiance du modèle:</h5>
+                        <div class="progress" style="height: 30px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ confidence }}%;" 
+                                 aria-valuenow="{{ confidence }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ confidence|floatformat:2 }}%
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mt-3">
+                            <p><strong>Modèle utilisé:</strong> <span class="badge bg-primary">{{ model_used }}</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h5>Données utilisées pour la prédiction:</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <strong>Type de contrat:</strong> {{ job_data.job_schedule_type }}
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Secteur:</strong> {{ job_data.sector }}
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <strong>Plateforme:</strong> {{ job_data.job_via }}
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Nombre de compétences:</strong> {{ job_data.job_skills }}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="{% url 'ml_app:job_title_predict' %}" class="btn btn-primary">
+                        <i class="fas fa-redo"></i> Nouvelle Prédiction
+                    </a>
+                    <a href="{% url 'ml_app:job_title_analysis' %}" class="btn btn-info">
+                        <i class="fas fa-chart-bar"></i> Voir l'Analyse
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-edit"></i> Formulaire de Prédiction</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" id="predictionForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="job_schedule_type" class="form-label">
+                            <i class="fas fa-clock"></i> Type de contrat <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="job_schedule_type" name="job_schedule_type" required>
+                            <option value="" selected disabled>Sélectionnez le type de contrat</option>
+                            {% for schedule_type in schedule_types %}
+                                <option value="{{ schedule_type }}">{{ schedule_type }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">
+                            Le type de contrat (Full-time, Part-time, Contract, etc.)
+                        </small>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="sector" class="form-label">
+                            <i class="fas fa-industry"></i> Secteur d'activité <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="sector" name="sector" required>
+                            <option value="" selected disabled>Sélectionnez le secteur</option>
+                            {% for sector_item in sectors %}
+                                <option value="{{ sector_item }}">{{ sector_item }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">
+                            Le secteur d'activité de l'entreprise
+                        </small>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="job_via" class="form-label">
+                            <i class="fas fa-globe"></i> Plateforme de recrutement <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="job_via" name="job_via" required>
+                            <option value="" selected disabled>Sélectionnez la plateforme</option>
+                            {% for via in job_vias %}
+                                <option value="{{ via }}">{{ via }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">
+                            La plateforme où l'offre est publiée (LinkedIn, Indeed, etc.)
+                        </small>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="job_skills" class="form-label">
+                            <i class="fas fa-tools"></i> Nombre de compétences requises <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="job_skills" name="job_skills" required>
+                            <option value="" selected disabled>Sélectionnez le nombre de compétences</option>
+                            {% for skill_count in skills_range %}
+                                <option value="{{ skill_count }}">{{ skill_count }} compétence{{ skill_count|pluralize }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">
+                            Le nombre de compétences techniques requises pour le poste
+                        </small>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-magic"></i> Prédire le Type de Poste
+                        </button>
+                        <a href="{% url 'ml_app:job_title_analysis' %}" class="btn btn-outline-info">
+                            <i class="fas fa-chart-bar"></i> Voir l'Analyse Complète
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5><i class="fas fa-info-circle"></i> À propos de ce modèle</h5>
+                <p>
+                    Ce modèle de classification utilise plusieurs algorithmes de machine learning (KNN, SVM, Decision Tree, 
+                    Random Forest, XGBoost) pour prédire le type de poste en fonction de ses caractéristiques.
+                </p>
+                <p>
+                    <strong>Features utilisées:</strong>
+                </p>
+                <ul>
+                    <li><strong>Type de contrat:</strong> Full-time, Part-time, Contract, Temporary, etc.</li>
+                    <li><strong>Secteur:</strong> Information Technology, Healthcare, Finance, etc.</li>
+                    <li><strong>Plateforme:</strong> LinkedIn, Indeed, Glassdoor, etc.</li>
+                    <li><strong>Compétences:</strong> Nombre de compétences techniques requises (0-5)</li>
+                </ul>
+                <p>
+                    <strong>Types de postes prédits:</strong> Data Analyst, Data Scientist, Data Engineer, 
+                    Business Analyst, Machine Learning Engineer, Senior Data Analyst, Senior Data Scientist, 
+                    Senior Data Engineer, Software Engineer, Cloud Engineer
+                </p>
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-lightbulb"></i> <strong>Note:</strong> Le modèle a été entraîné avec SMOTE 
+                    (Synthetic Minority Over-sampling Technique) pour équilibrer les classes et améliorer la précision 
+                    sur les types de postes moins fréquents.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('predictionForm').addEventListener('submit', function(e) {
+        // Afficher un loader pendant la prédiction
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Prédiction en cours...';
+        submitBtn.disabled = true;
+    });
+</script>
+{% endblock %}

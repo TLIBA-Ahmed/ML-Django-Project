@@ -1,0 +1,156 @@
+{% extends 'ml_app/base.html' %}
+{% load static %}
+
+{% block title %}Analyse - Prédiction d'Expérience{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4"><i class="fas fa-chart-line"></i> Analyse: Prédiction des Années d'Expérience</h1>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Statistiques globales -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5><i class="fas fa-database"></i> Total Échantillons</h5>
+                            <h2>{{ stats.total_samples }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5><i class="fas fa-chart-bar"></i> Moyenne Expérience</h5>
+                            <h2>{{ stats.avg_years_experience }} ans</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5><i class="fas fa-arrow-down"></i> Minimum</h5>
+                            <h2>{{ stats.min_years_experience }} ans</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <h5><i class="fas fa-arrow-up"></i> Maximum</h5>
+                            <h2>{{ stats.max_years_experience }} ans</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meilleur Modèle -->
+            <div class="card mb-4 border-success">
+                <div class="card-header bg-success text-white">
+                    <h4><i class="fas fa-trophy"></i> Meilleur Modèle: {{ best_model }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <p><strong>MAE:</strong> {{ best_metrics.MAE|floatformat:3 }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <p><strong>RMSE:</strong> {{ best_metrics.RMSE|floatformat:3 }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <p><strong>R² Score:</strong> {{ best_metrics.R2|floatformat:3 }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <p><strong>MSE:</strong> {{ best_metrics.MSE|floatformat:3 }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparaison des Modèles -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-balance-scale"></i> Comparaison des Modèles</h4>
+                </div>
+                <div class="card-body">
+                    <img src="{{ plot_comparison }}" class="img-fluid" alt="Model Comparison">
+                </div>
+            </div>
+
+            <!-- Actual vs Predicted -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h4><i class="fas fa-chart-scatter"></i> Actual vs Predicted ({{ best_model }})</h4>
+                </div>
+                <div class="card-body">
+                    <img src="{{ plot_actual_vs_pred }}" class="img-fluid" alt="Actual vs Predicted">
+                </div>
+            </div>
+
+            <!-- Analyse des Résidus -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-white">
+                    <h4><i class="fas fa-chart-area"></i> Analyse des Résidus ({{ best_model }})</h4>
+                </div>
+                <div class="card-body">
+                    <img src="{{ plot_residuals }}" class="img-fluid" alt="Residuals Analysis">
+                </div>
+            </div>
+
+            <!-- Feature Importance -->
+            {% if plot_feature_importance %}
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h4><i class="fas fa-star"></i> Importance des Features</h4>
+                </div>
+                <div class="card-body">
+                    <img src="{{ plot_feature_importance }}" class="img-fluid" alt="Feature Importance">
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Tableau des Métriques -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h4><i class="fas fa-table"></i> Métriques Détaillées</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Modèle</th>
+                                <th>MAE</th>
+                                <th>RMSE</th>
+                                <th>R² Score</th>
+                                <th>MSE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for model_name, metrics in all_metrics.items %}
+                            <tr {% if model_name == best_model %}class="table-success"{% endif %}>
+                                <td><strong>{{ model_name }}</strong> {% if model_name == best_model %}<span class="badge bg-success">Best</span>{% endif %}</td>
+                                <td>{{ metrics.MAE|floatformat:3 }}</td>
+                                <td>{{ metrics.RMSE|floatformat:3 }}</td>
+                                <td>{{ metrics.R2|floatformat:3 }}</td>
+                                <td>{{ metrics.MSE|floatformat:3 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
