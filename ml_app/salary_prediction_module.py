@@ -55,6 +55,27 @@ class SalaryPredictionModel:
         self.df = pd.read_csv(csv_path)
         return self.df
     
+    def get_unique_values(self):
+        """Récupère les valeurs uniques pour les champs catégoriels AVANT encodage"""
+        # Charger les données brutes (non encodées)
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        parent_dir = os.path.dirname(base_dir)
+        csv_path = os.path.join(parent_dir, 'Salary_Data.csv')
+        
+        if not os.path.exists(csv_path):
+            # Fallback: télécharger depuis Kaggle si le fichier local n'existe pas
+            path = kagglehub.dataset_download("ayeshasajjad123/salary-data")
+            csv_files = [f for f in os.listdir(path) if f.endswith('.csv')]
+            csv_path = os.path.join(path, csv_files[0])
+        
+        df_raw = pd.read_csv(csv_path)
+        
+        return {
+            'genders': sorted([str(x) for x in df_raw['Gender'].dropna().unique()]),
+            'education_levels': sorted([str(x) for x in df_raw['Education Level'].dropna().unique()]),
+            'job_titles': sorted([str(x) for x in df_raw['Job Title'].dropna().unique()])
+        }
+    
     def preprocess_data(self):
         """Prétraite les données"""
         if self.df is None:

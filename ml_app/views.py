@@ -266,21 +266,20 @@ def salary_predict(request):
     # Charger les options pour les listes déroulantes
     try:
         salary_model = SalaryPredictionModel()
-        salary_model.load_data()
-        
-        # Extraire les valeurs uniques pour les listes déroulantes
-        genders = sorted(salary_model.df['Gender'].unique().tolist())
-        education_levels = sorted(salary_model.df['Education Level'].unique().tolist())
-        job_titles = sorted(salary_model.df['Job Title'].unique().tolist())
+        unique_values = salary_model.get_unique_values()
         
         context = {
-            'genders': genders,
-            'education_levels': education_levels,
-            'job_titles': job_titles,
+            'genders': unique_values['genders'],
+            'education_levels': unique_values['education_levels'],
+            'job_titles': unique_values['job_titles'],
             'model_names': ['Linear Regression', 'Polynomial Regression', 'Decision Tree', 'Random Forest', 'Gradient Boosting']
         }
     except Exception as e:
+        messages.warning(request, f"Impossible de charger les options depuis les données: {str(e)}")
         context = {
+            'genders': ['Male', 'Female', 'Other'],
+            'education_levels': ["Bachelor's", "Master's", 'PhD', 'High School'],
+            'job_titles': ['Software Engineer', 'Data Scientist', 'Product Manager', 'Sales Manager'],
             'model_names': ['Linear Regression', 'Polynomial Regression', 'Decision Tree', 'Random Forest', 'Gradient Boosting']
         }
     
@@ -472,15 +471,18 @@ def classification_predict(request):
             # Simplifier le titre
             job_title_simplified = classifier._simplify_job_title(job_title)
             
-            # Préparer les données pour la prédiction avec toutes les colonnes nécessaires
+            # Préparer les données pour la prédiction avec toutes les colonnes attendues par le modèle
             job_data = {
+                'job_schedule_type': 'Full-time',  # Valeur par défaut
                 'job_work_from_home': int(request.POST.get('job_work_from_home', 0)),
                 'job_no_degree_mention': int(request.POST.get('job_no_degree_mention', 0)),
                 'job_health_insurance': int(request.POST.get('job_health_insurance', 0)),
                 'job_country': request.POST.get('job_country', 'Unknown'),
-                'job_schedule_type': 'Full-time',  # Valeur par défaut
-                'job_skills': 'Unknown',  # Valeur par défaut
+                'job_skills': 'python',  # Valeur par défaut
             }
+            
+            # Récupérer les données non utilisées pour l'affichage et la sauvegarde
+            company_name = request.POST.get('company_name', 'Unknown')
             
             # Faire la prédiction
             platform, platform_probas = classifier.predict_platform(job_data, model_name)
@@ -493,7 +495,7 @@ def classification_predict(request):
                 user=request.user,
                 job_title_simplified=job_title_simplified,
                 job_country=job_data['job_country'],
-                company_name=job_data['company_name'],
+                company_name=company_name,
                 job_work_from_home=bool(job_data['job_work_from_home']),
                 job_no_degree_mention=bool(job_data['job_no_degree_mention']),
                 job_health_insurance=bool(job_data['job_health_insurance']),
@@ -503,6 +505,9 @@ def classification_predict(request):
             )
             
             messages.success(request, f"Prédiction réussie! Plateforme recommandée: {platform}")
+            
+            # Ajouter company_name pour l'affichage
+            job_data['company_name'] = company_name
             
             context.update({
                 'predicted_platform': platform,
@@ -1422,4 +1427,5 @@ def powerbi_dashboard(request):
     }
     
     return render(request, 'ml_app/powerbi_dashboard.html', context)
+
 

@@ -446,6 +446,9 @@ class PlatformClassificationModel:
         
         if model_name is None:
             model_name = self.best_model_name
+            # Si best_model_name est None, utiliser le premier modèle disponible
+            if model_name is None and self.models:
+                model_name = list(self.models.keys())[0]
         
         model = self.models[model_name]
         
@@ -623,3 +626,4 @@ class PlatformClassificationModel:
         plt.close()
         
         return image_base64
+
