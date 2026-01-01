@@ -349,6 +349,47 @@
         </div>
     </div>
 
+    <!-- Job Skill Clustering Card -->
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-lg">
+            <div class="card-header" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                <h3 class="mb-0">
+                    <i class="fas fa-brain"></i> Clustering par Compétences
+                </h3>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    Clustering basé sur les compétences techniques (skills) des jobs:
+                </p>
+                <ul>
+                    <li>3 profils identifiés: Business/BI, Data Engineer, Data Scientist</li>
+                    <li>Analyse PCA et K-means (k=3)</li>
+                    <li>Top compétences par cluster</li>
+                    <li>Distribution des titres de jobs</li>
+                </ul>
+                <div class="d-grid gap-2">
+                    {% if user.is_staff %}
+                        <a href="{% url 'ml_app:job_skill_clustering_analysis' %}" class="btn btn-lg" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                            <i class="fas fa-chart-bar"></i> Voir l'Analyse
+                        </a>
+                    {% endif %}
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'ml_app:job_skill_clustering_predict' %}" class="btn btn-outline-info">
+                            <i class="fas fa-magic"></i> Identifier mon Profil
+                        </a>
+                    {% else %}
+                        <a href="{% url 'ml_app:login' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-sign-in-alt"></i> Connectez-vous
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-footer text-muted">
+                <small><i class="fas fa-database"></i> Dataset: Processed Job Skills</small>
+            </div>
+        </div>
+    </div>
+
     <!-- Job Analysis Card (DS2) -->
     <div class="col-md-4">
         <div class="card h-100 border-0 shadow-lg">

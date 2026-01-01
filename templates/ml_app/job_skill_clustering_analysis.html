@@ -1,0 +1,271 @@
+{% extends 'ml_app/base.html' %}
+
+{% block title %}Analyse de Clustering par Compétences - ML Application{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="display-5 fw-bold">
+        <i class="fas fa-brain"></i> Clustering des Jobs basé sur les Compétences
+    </h1>
+    <p class="lead">Identification des profils de compétences et groupes de jobs similaires</p>
+</div>
+
+{% if error %}
+<div class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle"></i> Une erreur s'est produite lors de l'analyse.
+    <br>Détails: {{ error }}
+</div>
+{% else %}
+
+<!-- Informations sur les données -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="stats-card">
+            <i class="fas fa-database fa-2x mb-2"></i>
+            <h3>{{ data_info.total_jobs|default:"N/A" }}</h3>
+            <p>Jobs analysés</p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="stats-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <i class="fas fa-layer-group fa-2x mb-2"></i>
+            <h3>{{ data_info.n_clusters|default:"3" }}</h3>
+            <p>Clusters identifiés</p>
+        </div>
+    </div>
+</div>
+
+<!-- Résumé des clusters -->
+{% if cluster_summary %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <i class="fas fa-info-circle"></i> Résumé des Profils de Compétences
+        </h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for cluster_id, info in cluster_summary.items %}
+            <div class="col-md-4 mb-3">
+                <div class="card h-100" style="border-left: 4px solid {% if cluster_id == 0 %}#FF6B6B{% elif cluster_id == 1 %}#4ECDC4{% else %}#45B7D1{% endif %};">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-folder-open"></i> Cluster {{ cluster_id }}
+                        </h5>
+                        <h6 class="text-muted">{{ info.label }}</h6>
+                        <hr>
+                        <p><strong>Taille:</strong> {{ info.size|default:"0" }} jobs ({{ info.percentage|default:"0" }}%)</p>
+                        <p><strong>Compétences moyennes:</strong> {{ info.avg_skills|default:"0" }}</p>
+                        
+                        <h6 class="mt-3">Top 5 Compétences:</h6>
+                        <ul class="list-unstyled">
+                            {% for skill, pct in info.top_skills|slice:":5" %}
+                            <li>
+                                <span class="badge bg-primary">{{ skill }}</span>
+                                <small class="text-muted">{{ pct|floatformat:1 }}%</small>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        
+                        {% if info.dominant_titles %}
+                        <h6 class="mt-3">Jobs dominants:</h6>
+                        <ul class="list-unstyled">
+                            {% for title, pct in info.dominant_titles|slice:":3" %}
+                            <li><small>• {{ title }} ({{ pct|floatformat:1 }}%)</small></li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Méthode du coude -->
+{% if elbow_plot %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <i class="fas fa-chart-line"></i> Méthode du Coude
+        </h4>
+    </div>
+    <div class="card-body">
+        <p>Détermination du nombre optimal de clusters basé sur l'inertie.</p>
+        <div class="plot-container text-center">
+            <img src="data:image/png;base64,{{ elbow_plot }}" alt="Elbow Method" class="img-fluid" style="max-height: 500px;">
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Score de Silhouette -->
+{% if silhouette_plot %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <i class="fas fa-chart-area"></i> Analyse du Score de Silhouette
+        </h4>
+    </div>
+    <div class="card-body">
+        <p>Le score de silhouette mesure la qualité de la séparation des clusters.</p>
+        <div class="plot-container text-center">
+            <img src="data:image/png;base64,{{ silhouette_plot }}" alt="Silhouette Score" class="img-fluid" style="max-height: 500px;">
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Visualisation PCA -->
+{% if pca_plot %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <i class="fas fa-project-diagram"></i> Visualisation PCA des Clusters
+        </h4>
+    </div>
+    <div class="card-body">
+        <p>Projection des jobs sur les deux premières composantes principales avec les centroïdes des clusters.</p>
+        <div class="plot-container text-center">
+            <img src="data:image/png;base64,{{ pca_plot }}" alt="PCA Clusters" class="img-fluid" style="max-height: 600px;">
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Distribution des clusters -->
+{% if distribution_plot %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <i class="fas fa-chart-pie"></i> Distribution des Clusters
+        </h4>
+    </div>
+    <div class="card-body">
+        <p>Répartition des jobs dans chaque cluster.</p>
+        <div class="plot-container text-center">
+            <img src="data:image/png;base64,{{ distribution_plot }}" alt="Cluster Distribution" class="img-fluid" style="max-height: 500px;">
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Distribution du nombre de compétences -->
+{% if skills_dist_plot %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <i class="fas fa-layer-group"></i> Distribution du Nombre de Compétences par Cluster
+        </h4>
+    </div>
+    <div class="card-body">
+        <p>Histogramme du nombre de compétences requises par job dans chaque cluster.</p>
+        <div class="plot-container text-center">
+            <img src="data:image/png;base64,{{ skills_dist_plot }}" alt="Skills Distribution" class="img-fluid" style="max-height: 500px;">
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Top compétences par cluster -->
+{% if top_skills_plot %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <i class="fas fa-star"></i> Top 10 Compétences par Cluster
+        </h4>
+    </div>
+    <div class="card-body">
+        <p>Les compétences les plus demandées dans chaque cluster.</p>
+        <div class="plot-container text-center">
+            <img src="data:image/png;base64,{{ top_skills_plot }}" alt="Top Skills" class="img-fluid" style="max-height: 600px;">
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Comparaison des compétences clés -->
+{% if skills_comparison_plot %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <i class="fas fa-balance-scale"></i> Comparaison des Compétences Clés
+        </h4>
+    </div>
+    <div class="card-body">
+        <p>Comparaison de compétences importantes à travers les clusters.</p>
+        <div class="plot-container text-center">
+            <img src="data:image/png;base64,{{ skills_comparison_plot }}" alt="Skills Comparison" class="img-fluid" style="max-height: 600px;">
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Radar Chart -->
+{% if radar_plot %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <i class="fas fa-radar"></i> Profils de Compétences (Radar Chart)
+        </h4>
+    </div>
+    <div class="card-body">
+        <p>Vue radar des profils de compétences par cluster.</p>
+        <div class="plot-container text-center">
+            <img src="data:image/png;base64,{{ radar_plot }}" alt="Radar Chart" class="img-fluid" style="max-height: 700px;">
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Distribution des titres de jobs -->
+{% if job_title_plot %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <i class="fas fa-briefcase"></i> Distribution des Titres de Jobs par Cluster
+        </h4>
+    </div>
+    <div class="card-body">
+        <p>Répartition des différents titres de jobs dans chaque cluster.</p>
+        <div class="plot-container text-center">
+            <img src="data:image/png;base64,{{ job_title_plot }}" alt="Job Title Distribution" class="img-fluid" style="max-height: 700px;">
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Heatmap des compétences -->
+{% if heatmap_plot %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <i class="fas fa-th"></i> Heatmap des Compétences par Cluster
+        </h4>
+    </div>
+    <div class="card-body">
+        <p>Matrice de présence des compétences dans chaque cluster.</p>
+        <div class="plot-container text-center">
+            <img src="data:image/png;base64,{{ heatmap_plot }}" alt="Skills Heatmap" class="img-fluid" style="max-height: 600px;">
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Bouton pour la prédiction -->
+<div class="card">
+    <div class="card-body text-center">
+        <h5 class="card-title">
+            <i class="fas fa-magic"></i> Découvrez votre profil
+        </h5>
+        <p class="card-text">Utilisez le module de prédiction pour identifier à quel cluster appartient un ensemble de compétences.</p>
+        <a href="{% url 'ml_app:job_skill_clustering_predict' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-arrow-right"></i> Aller à la prédiction
+        </a>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}

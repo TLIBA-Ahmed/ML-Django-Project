@@ -18,6 +18,7 @@ from .experience_prediction_module import ExperiencePredictionModel
 from .employee_clustering_module import EmployeeClusteringModel
 from .company_profiling_module import CompanyProfilingModel
 from .job_analysis_module import JobAnalysisModel
+from .job_skill_clustering_module import JobSkillClusteringModel
 from .chatbot_module import get_chatbot_instance
 import json
 import os
@@ -1427,5 +1428,124 @@ def powerbi_dashboard(request):
     }
     
     return render(request, 'ml_app/powerbi_dashboard.html', context)
+
+
+# ========================================
+# Job Skill Clustering Views
+# ========================================
+
+@user_passes_test(is_admin, login_url='/login/')
+def job_skill_clustering_analysis(request):
+    """Page d'analyse de clustering basé sur les compétences"""
+    context = {}
+    
+    try:
+        # Initialiser le modèle de clustering
+        skill_clustering = JobSkillClusteringModel()
+        skill_clustering.load_data()
+        skill_clustering.preprocess_data()
+        
+        # Générer les visualisations
+        elbow_plot, _ = skill_clustering.elbow_method()
+        silhouette_plot, _ = skill_clustering.silhouette_analysis()
+        
+        # Effectuer le clustering avec k=3 (optimal)
+        skill_clustering.perform_kmeans(n_clusters=3)
+        
+        # Générer les visualisations de clustering
+        pca_plot = skill_clustering.visualize_pca_clusters()
+        distribution_plot = skill_clustering.visualize_cluster_distribution()
+        skills_dist_plot = skill_clustering.visualize_skills_distribution_by_cluster()
+        top_skills_plot = skill_clustering.visualize_top_skills_by_cluster(top_n=10)
+        skills_comparison_plot = skill_clustering.visualize_key_skills_comparison()
+        radar_plot = skill_clustering.visualize_radar_chart()
+        job_title_plot = skill_clustering.visualize_job_title_distribution()
+        heatmap_plot = skill_clustering.visualize_skill_heatmap()
+        
+        # Obtenir le résumé des clusters
+        cluster_summary = skill_clustering.get_cluster_summary()
+        
+        context = {
+            'elbow_plot': elbow_plot,
+            'silhouette_plot': silhouette_plot,
+            'pca_plot': pca_plot,
+            'distribution_plot': distribution_plot,
+            'skills_dist_plot': skills_dist_plot,
+            'top_skills_plot': top_skills_plot,
+            'skills_comparison_plot': skills_comparison_plot,
+            'radar_plot': radar_plot,
+            'job_title_plot': job_title_plot,
+            'heatmap_plot': heatmap_plot,
+            'cluster_summary': cluster_summary,
+            'data_info': {
+                'total_jobs': len(skill_clustering.data),
+                'n_clusters': skill_clustering.optimal_k
+            }
+        }
+        
+    except FileNotFoundError as e:
+        messages.error(request, f"Fichier de données non trouvé: {str(e)}")
+        context['error'] = str(e)
+    except Exception as e:
+        messages.error(request, f"Erreur lors de l'analyse: {str(e)}")
+        context['error'] = str(e)
+    
+    return render(request, 'ml_app/job_skill_clustering_analysis.html', context)
+
+
+@login_required
+def job_skill_clustering_predict(request):
+    """Page de prédiction du cluster basé sur les compétences"""
+    context = {}
+    
+    # Liste des compétences disponibles
+    all_skills = [
+        'python', 'sql', 'r', 'excel', 'spark', 'aws', 'azure', 'gcp',
+        'tableau', 'power bi', 'java', 'hadoop', 'docker', 'kubernetes',
+        'airflow', 'kafka', 'scala', 'git', 'nosql', 'oracle', 'sql server',
+        'sas', 'snowflake', 'databricks', 'go'
+    ]
+    
+    context['all_skills'] = all_skills
+    
+    if request.method == 'POST':
+        try:
+            # Récupérer les compétences sélectionnées
+            selected_skills = request.POST.getlist('skills')
+            
+            if not selected_skills:
+                messages.error(request, "Veuillez sélectionner au moins une compétence")
+                return render(request, 'ml_app/job_skill_clustering_predict.html', context)
+            
+            # Créer le dictionnaire de compétences
+            skills_dict = {skill: 1 if skill in selected_skills else 0 for skill in all_skills}
+            
+            # Initialiser le modèle
+            skill_clustering = JobSkillClusteringModel()
+            skill_clustering.load_data()
+            skill_clustering.preprocess_data()
+            skill_clustering.perform_kmeans(n_clusters=3)
+            
+            # Faire la prédiction
+            predicted_cluster, cluster_label = skill_clustering.predict_cluster(skills_dict)
+            
+            # Obtenir les informations du cluster
+            cluster_summary = skill_clustering.get_cluster_summary()
+            cluster_info = cluster_summary.get(predicted_cluster, {})
+            
+            messages.success(request, f"Prédiction réussie! Profil: {cluster_label}")
+            
+            context.update({
+                'prediction': predicted_cluster,
+                'cluster_label': cluster_label,
+                'cluster_info': cluster_info,
+                'selected_skills': selected_skills,
+                'num_skills': len(selected_skills)
+            })
+            
+        except Exception as e:
+            messages.error(request, f"Erreur lors de la prédiction: {str(e)}")
+    
+    return render(request, 'ml_app/job_skill_clustering_predict.html', context)
 
 

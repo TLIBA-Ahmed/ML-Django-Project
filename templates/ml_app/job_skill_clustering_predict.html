@@ -1,0 +1,239 @@
+{% extends 'ml_app/base.html' %}
+
+{% block title %}Prédiction de Profil de Compétences - ML Application{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="display-5 fw-bold">
+        <i class="fas fa-magic"></i> Prédiction de Profil de Compétences
+    </h1>
+    <p class="lead">Identifiez le cluster de compétences correspondant à votre profil</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-list-check"></i> Sélectionnez vos compétences
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-check-circle"></i> Compétences disponibles
+                        </label>
+                        <p class="text-muted small">Cochez les compétences que vous possédez ou que vous recherchez dans un job.</p>
+                        
+                        <div class="row">
+                            {% for skill in all_skills %}
+                            <div class="col-md-6 col-lg-4 mb-2">
+                                <div class="form-check">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        name="skills" 
+                                        value="{{ skill }}" 
+                                        id="skill_{{ forloop.counter }}"
+                                        {% if skill in selected_skills %}checked{% endif %}
+                                    >
+                                    <label class="form-check-label" for="skill_{{ forloop.counter }}">
+                                        <span class="badge bg-light text-dark">{{ skill }}</span>
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-search"></i> Identifier mon profil
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body text-center">
+                <a href="{% url 'ml_app:job_skill_clustering_analysis' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour à l'analyse
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        {% if prediction is not None %}
+        <!-- Résultats de la prédiction -->
+        <div class="card bg-success text-white mb-3">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-check-circle"></i> Profil identifié !
+                </h5>
+                <h2 class="mb-0">Cluster {{ prediction }}</h2>
+            </div>
+        </div>
+        
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tag"></i> Votre profil
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6 class="text-primary">{{ cluster_label }}</h6>
+                
+                <hr>
+                
+                <p><strong>Compétences sélectionnées:</strong> {{ num_skills }}</p>
+                
+                {% if cluster_info %}
+                <p><strong>Taille du cluster:</strong> {{ cluster_info.size }} jobs</p>
+                <p><strong>Représentation:</strong> {{ cluster_info.percentage }}%</p>
+                <p><strong>Compétences moyennes:</strong> {{ cluster_info.avg_skills }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if cluster_info.top_skills %}
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-star"></i> Top compétences du cluster
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for skill, pct in cluster_info.top_skills|slice:":5" %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>{{ skill }}</span>
+                        <span class="badge bg-primary rounded-pill">{{ pct|floatformat:1 }}%</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if cluster_info.dominant_titles %}
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-briefcase"></i> Jobs typiques
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for title, pct in cluster_info.dominant_titles|slice:":5" %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <small>{{ title }}</small>
+                        <span class="badge bg-secondary rounded-pill">{{ pct|floatformat:1 }}%</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if selected_skills %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clipboard-list"></i> Vos compétences
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    {% for skill in selected_skills %}
+                    <span class="badge bg-info">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <!-- Informations sur les clusters -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle"></i> À propos des clusters
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6 class="text-primary">Cluster 0</h6>
+                <p class="small">Business / BI Analysts</p>
+                <p class="small text-muted">
+                    Profils orientés analyse business, reporting et visualisation de données.
+                    Compétences clés: Excel, Tableau, Power BI, SQL.
+                </p>
+                
+                <hr>
+                
+                <h6 class="text-success">Cluster 1</h6>
+                <p class="small">Senior Data Engineers</p>
+                <p class="small text-muted">
+                    Experts en ingénierie de données, Big Data et infrastructure cloud.
+                    Compétences clés: Spark, AWS, Azure, Hadoop, Kafka.
+                </p>
+                
+                <hr>
+                
+                <h6 class="text-info">Cluster 2</h6>
+                <p class="small">Data Scientists & Applied Analysts</p>
+                <p class="small text-muted">
+                    Spécialistes en modélisation, machine learning et analyse appliquée.
+                    Compétences clés: Python, R, SQL, Machine Learning.
+                </p>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="fas fa-lightbulb"></i> Conseil
+                </h6>
+                <p class="card-text small text-muted">
+                    Sélectionnez les compétences que vous possédez pour découvrir 
+                    à quel profil professionnel vous correspondez le mieux dans 
+                    l'écosystème des métiers de la data.
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Section aide -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-question-circle"></i> Comment ça marche ?
+                </h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-1"></i> Sélection</h6>
+                        <p class="small">Cochez les compétences techniques que vous maîtrisez ou recherchez.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-2"></i> Analyse</h6>
+                        <p class="small">Notre algorithme K-means analyse votre profil de compétences.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-3"></i> Résultat</h6>
+                        <p class="small">Découvrez quel type de profil professionnel correspond à vos compétences.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
