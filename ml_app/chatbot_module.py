@@ -130,21 +130,26 @@ class RAGChatbot:
             retrieved_chunks = [self.chunks[i].page_content for i in indices[0]]
             context = "\n\n".join(retrieved_chunks)
             
-            # Generate answer with Gemini if available
-            if self.gemini_model:
-                prompt_template = f"""
+            # Try to generate answer with Gemini, but fallback if it fails
+            try:
+                if self.gemini_model:
+                    prompt_template = f"""
 Context:
 {context}
 
 Question: {query}
 
-Answer in 2-3 sentences maximum. Be direct and concise.
+Answer in 2-3 sentences maximum. Be direct and concise. Use French if the question is in French.
 """
-                response = self.gemini_model.generate_content(prompt_template)
-                answer = response.text.strip()
-            else:
-                # Fallback: return context if no API available
-                answer = f"Based on the available data:\n\n{context[:500]}..."
+                    response = self.gemini_model.generate_content(prompt_template)
+                    answer = response.text.strip()
+                else:
+                    # Use fallback method
+                    answer = self._generate_fallback_answer(query, retrieved_chunks)
+            except Exception as gemini_error:
+                print(f"Gemini API error: {gemini_error}. Using fallback method.")
+                # Fallback to context-based answer
+                answer = self._generate_fallback_answer(query, retrieved_chunks)
             
             return {
                 'answer': answer,
@@ -154,10 +159,77 @@ Answer in 2-3 sentences maximum. Be direct and concise.
             
         except Exception as e:
             return {
-                'answer': f"Sorry, I encountered an error: {str(e)}",
+                'answer': f"Désolé, une erreur s'est produite: {str(e)}",
                 'context': '',
                 'success': False
             }
+    
+    def _generate_fallback_answer(self, query: str, chunks: list) -> str:
+        """
+        Generate an answer from retrieved chunks when API is unavailable
+        
+        Args:
+            query: User's question
+            chunks: Retrieved context chunks
+            
+        Returns:
+            Generated answer string
+        """
+        # Extract key information from chunks
+        query_lower = query.lower()
+        
+        # Check if question is about salary/salaire
+        if any(word in query_lower for word in ['salaire', 'salary', 'paye', 'rémunération', 'gain']):
+            # Extract salary information
+            salaries = []
+            jobs = []
+            for chunk in chunks:
+                if 'Salary:' in chunk or 'salaire' in chunk.lower():
+                    # Extract salary and job title
+                    lines = chunk.split('.')
+                    for line in lines:
+                        if 'Salary:' in line or 'Job' in line:
+                            parts = line.split(':')
+                            if len(parts) > 1:
+                                try:
+                                    salary_str = parts[1].strip().split()[0]
+                                    salary = float(salary_str.replace(',', ''))
+                                    salaries.append(salary)
+                                    # Get job title
+                                    if 'Job' in line:
+                                        job = line.split(':')[1].split('at')[0].strip()
+                                        jobs.append((job, salary))
+                                except:
+                                    pass
+            
+            if salaries:
+                max_salary = max(salaries)
+                avg_salary = sum(salaries) / len(salaries)
+                
+                # Find job with highest salary
+                best_job = "Data Scientist" if not jobs else max(jobs, key=lambda x: x[1])[0]
+                
+                answer = f"D'après les données disponibles, les salaires varient entre {min(salaries):.0f}$ et {max_salary:.0f}$ USD. "
+                answer += f"Le salaire moyen est d'environ {avg_salary:.0f}$ USD. "
+                answer += f"Les postes les mieux payés sont généralement: {best_job}, avec des salaires pouvant atteindre {max_salary:.0f}$ USD."
+            else:
+                answer = "Voici les informations sur les salaires disponibles:\n\n" + chunks[0][:400] + "..."
+        
+        # Check if question is about skills/compétences
+        elif any(word in query_lower for word in ['compétence', 'skill', 'technologie', 'outil']):
+            answer = "D'après les offres d'emploi disponibles, voici quelques informations pertinentes:\n\n"
+            answer += chunks[0][:300] + "..."
+        
+        # Check if question is about jobs/métiers
+        elif any(word in query_lower for word in ['métier', 'job', 'poste', 'emploi', 'travail']):
+            answer = "Voici les informations sur les métiers disponibles dans le secteur IA:\n\n"
+            answer += chunks[0][:300] + "..."
+        
+        # Generic answer
+        else:
+            answer = f"Voici les informations pertinentes que j'ai trouvées:\n\n{chunks[0][:400]}..."
+        
+        return answer
     
     def get_quick_stats(self) -> dict:
         """Get quick statistics about the dataset"""
