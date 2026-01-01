@@ -125,4 +125,4 @@ LOGOUT_REDIRECT_URL = '/login/'
 # Power BI Dashboard Settings
 # Pour configurer : Remplacez None par l'URL d'intégration de votre dashboard Power BI
 # Exemple : POWERBI_EMBED_URL = "https://app.powerbi.com/view?r=XXXXX"
-POWERBI_EMBED_URL = "https://app.powerbi.com/reportEmbed?reportId=ec7ef0a6-a889-4e6f-8250-0fd0455632d2&autoAuth=true&ctid=604f1a96-cbe8-43f8-abbf-f8eaf5d85730"
+POWERBI_EMBED_URL = "https://app.powerbi.com/reportEmbed?reportId=e248d8f6-482c-4453-b099-19b604743133&autoAuth=true&ctid=604f1a96-cbe8-43f8-abbf-f8eaf5d85730"
