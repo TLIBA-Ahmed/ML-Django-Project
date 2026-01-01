@@ -25,35 +25,35 @@ import os
 
 
 def home(request):
-    """Page d'accueil"""
+    """Home page"""
     return render(request, 'ml_app/home.html')
 
 
-# Vues d'authentification
+# Authentication views
 def login_view(request):
-    """Vue de connexion"""
+    """Login view"""
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            messages.success(request, f'Bienvenue {user.username}!')
+            messages.success(request, f'Welcome {user.username}!')
             return redirect('ml_app:home')
         else:
-            messages.error(request, 'Nom d\'utilisateur ou mot de passe incorrect')
+            messages.error(request, 'Incorrect username or password')
     return render(request, 'ml_app/login.html')
 
 
 def logout_view(request):
-    """Vue de déconnexion"""
+    """Logout view"""
     logout(request)
-    messages.success(request, 'Vous êtes déconnecté')
+    messages.success(request, 'You have been logged out')
     return redirect('ml_app:login')
 
 
 def register_view(request):
-    """Vue d'inscription"""
+    """Registration view"""
     if request.method == 'POST':
         username = request.POST.get('username')
         email = request.POST.get('email')
@@ -61,55 +61,55 @@ def register_view(request):
         password_confirm = request.POST.get('password_confirm')
         
         if password != password_confirm:
-            messages.error(request, 'Les mots de passe ne correspondent pas')
+            messages.error(request, 'Passwords do not match')
         elif User.objects.filter(username=username).exists():
-            messages.error(request, 'Ce nom d\'utilisateur existe déjà')
+            messages.error(request, 'This username already exists')
         elif User.objects.filter(email=email).exists():
-            messages.error(request, 'Cet email est déjà utilisé')
+            messages.error(request, 'This email is already in use')
         else:
             try:
-                # Créer et sauvegarder l'utilisateur dans la base de données
+                # Create and save the user to the database
                 user = User.objects.create_user(username=username, email=email, password=password)
-                user.save()  # Sauvegarder explicitement
+                user.save()  # Save explicitly
                 
-                # Connecter l'utilisateur automatiquement après l'inscription
+                # Automatically log in the user after registration
                 login(request, user)
-                messages.success(request, f'Compte créé avec succès! Vous pouvez maintenant vous reconnecter à tout moment avec votre nom d\'utilisateur et mot de passe.')
+                messages.success(request, f'Account created successfully! You can now log in anytime with your username and password.')
                 return redirect('ml_app:home')
             except Exception as e:
-                messages.error(request, f'Erreur lors de la création du compte: {str(e)}')
+                messages.error(request, f'Error creating account: {str(e)}')
     return render(request, 'ml_app/register.html')
 
 
 def is_admin(user):
-    """Vérifie si l'utilisateur est admin"""
+    """Check if user is admin"""
     return user.is_staff or user.is_superuser
 
 
 @user_passes_test(is_admin, login_url='/login/')
 def clustering_analysis(request):
-    """Page d'analyse de clustering"""
+    """Clustering analysis page"""
     context = {}
     
     try:
-        # Initialiser l'analyse de clustering
+        # Initialize clustering analysis
         clustering = ClusteringAnalysis()
         clustering.load_data()
         clustering.preprocess_data()
         clustering.perform_pca()
         
-        # Générer les visualisations principales
+        # Generate main visualizations
         elbow_plot = clustering.elbow_method()
         clustering.perform_kmeans(n_clusters=4)
         cluster_plot = clustering.visualize_clusters()
         profiles = clustering.cluster_profiles()
         
-        # Nouvelles visualisations
+        # New visualizations
         cluster_sizes_plot = clustering.visualize_cluster_sizes()
         cluster_distributions_plot = clustering.visualize_cluster_distributions()
         cluster_comparison_plot = clustering.visualize_cluster_profiles_comparison()
         
-        # Sauvegarder le résultat dans la base de données
+        # Save result to database
         ClusteringResult.objects.create(
             n_clusters=4,
             algorithm='K-means'
@@ -129,7 +129,7 @@ def clustering_analysis(request):
         }
         
     except Exception as e:
-        messages.error(request, f"Erreur lors de l'analyse de clustering: {str(e)}")
+        messages.error(request, f"Error during clustering analysis: {str(e)}")
         context['error'] = str(e)
     
     return render(request, 'ml_app/clustering_analysis.html', context)
@@ -137,13 +137,13 @@ def clustering_analysis(request):
 
 @login_required
 def clustering_predict(request):
-    """Page de prédiction de cluster pour un job"""
-    # Charger les options pour les listes déroulantes
+    """Cluster prediction page for a job"""
+    # Load options for dropdown lists
     try:
         clustering = ClusteringAnalysis()
         clustering.load_data()
         
-        # Extraire les valeurs uniques pour les listes déroulantes
+        # Extract unique values for dropdown lists
         job_titles = sorted(clustering.df['job_title'].unique().tolist())
         experience_levels = sorted(clustering.df['experience_level'].unique().tolist())
         employment_types = sorted(clustering.df['employment_type'].unique().tolist())

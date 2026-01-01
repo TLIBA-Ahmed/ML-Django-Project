@@ -1,20 +1,20 @@
 {% extends 'ml_app/base.html' %}
 
-{% block title %}Accueil - ML Application{% endblock %}
+{% block title %}Home - ML Application{% endblock %}
 
 {% block content %}
 <div class="text-center mb-5">
     <h1 class="display-4 fw-bold" style="color: var(--primary-color);">
-        <i class="fas fa-brain"></i> Bienvenue sur l'Application ML
+        <i class="fas fa-brain"></i> Welcome to ML Application
     </h1>
-    <p class="lead">Analysez et prédisez avec nos modèles de Machine Learning</p>
+    <p class="lead">Analyze and predict with our Machine Learning models</p>
     {% if user.is_authenticated %}
         <p class="text-muted">
-            Connecté en tant que <strong>{{ user.username }}</strong>
+            Logged in as <strong>{{ user.username }}</strong>
             {% if user.is_staff %}
-                <span class="badge bg-warning">Administrateur</span>
+                <span class="badge bg-warning">Administrator</span>
             {% else %}
-                <span class="badge bg-info">Utilisateur</span>
+                <span class="badge bg-info">User</span>
             {% endif %}
         </p>
     {% endif %}
@@ -26,32 +26,32 @@
         <div class="card h-100">
             <div class="card-header">
                 <h3 class="mb-0">
-                    <i class="fas fa-project-diagram"></i> Clustering des Jobs AI
+                    <i class="fas fa-project-diagram"></i> AI Job Clustering
                 </h3>
             </div>
             <div class="card-body">
                 <p class="card-text">
-                    Analysez les tendances du marché mondial de l'IA et découvrez les clusters de jobs basés sur :
+                    Analyze global AI market trends and discover job clusters based on:
                 </p>
                 <ul>
-                    <li>Salaires et rémunérations</li>
-                    <li>Niveaux d'expérience requis</li>
-                    <li>Localisations des entreprises</li>
-                    <li>Tailles des entreprises</li>
+                    <li>Salaries and compensation</li>
+                    <li>Required experience levels</li>
+                    <li>Company locations</li>
+                    <li>Company sizes</li>
                 </ul>
                 <div class="d-grid gap-2">
                     {% if user.is_staff %}
                         <a href="{% url 'ml_app:clustering_analysis' %}" class="btn btn-primary btn-lg">
-                            <i class="fas fa-chart-bar"></i> Voir l'Analyse
+                            <i class="fas fa-chart-bar"></i> View Analysis
                         </a>
                     {% endif %}
                     {% if user.is_authenticated %}
                         <a href="{% url 'ml_app:clustering_predict' %}" class="btn btn-outline-primary">
-                            <i class="fas fa-search"></i> Prédire un Cluster
+                            <i class="fas fa-search"></i> Predict a Cluster
                         </a>
                     {% else %}
                         <a href="{% url 'ml_app:login' %}" class="btn btn-outline-primary">
-                            <i class="fas fa-sign-in-alt"></i> Connectez-vous pour prédire
+                            <i class="fas fa-sign-in-alt"></i> Log in to predict
                         </a>
                     {% endif %}
                 </div>
@@ -67,32 +67,32 @@
         <div class="card h-100">
             <div class="card-header" style="background: linear-gradient(135deg, #27ae60, #229954);">
                 <h3 class="mb-0">
-                    <i class="fas fa-dollar-sign"></i> Prédiction de Salaire
+                    <i class="fas fa-dollar-sign"></i> Salary Prediction
                 </h3>
             </div>
             <div class="card-body">
                 <p class="card-text">
-                    Prédisez les salaires en utilisant plusieurs modèles de régression basés sur :
+                    Predict salaries using multiple regression models based on:
                 </p>
                 <ul>
-                    <li>Âge et années d'expérience</li>
-                    <li>Niveau d'éducation</li>
-                    <li>Titre du poste</li>
-                    <li>Genre</li>
+                    <li>Age and years of experience</li>
+                    <li>Education level</li>
+                    <li>Job title</li>
+                    <li>Gender</li>
                 </ul>
                 <div class="d-grid gap-2">
                     {% if user.is_staff %}
                         <a href="{% url 'ml_app:salary_analysis' %}" class="btn btn-success btn-lg">
-                            <i class="fas fa-chart-line"></i> Voir l'Analyse
+                            <i class="fas fa-chart-line"></i> View Analysis
                         </a>
                     {% endif %}
                     {% if user.is_authenticated %}
                         <a href="{% url 'ml_app:salary_predict' %}" class="btn btn-outline-success">
-                            <i class="fas fa-calculator"></i> Estimer un Salaire
+                            <i class="fas fa-calculator"></i> Estimate a Salary
                         </a>
                     {% else %}
                         <a href="{% url 'ml_app:login' %}" class="btn btn-outline-success">
-                            <i class="fas fa-sign-in-alt"></i> Connectez-vous pour prédire
+                            <i class="fas fa-sign-in-alt"></i> Log in to predict
                         </a>
                     {% endif %}
                 </div>
@@ -108,32 +108,32 @@
         <div class="card h-100">
             <div class="card-header" style="background: linear-gradient(135deg, #667eea, #764ba2);">
                 <h3 class="mb-0">
-                    <i class="fas fa-sitemap"></i> Classification des Plateformes
+                    <i class="fas fa-sitemap"></i> Platform Classification
                 </h3>
             </div>
             <div class="card-body">
                 <p class="card-text">
-                    Découvrez quelle plateforme de recrutement donnera la meilleure visibilité à votre job :
+                    Discover which recruitment platform will give the best visibility to your job:
                 </p>
                 <ul>
                     <li>LinkedIn, BeBee, Jooble, etc.</li>
-                    <li>Basé sur le type de poste</li>
-                    <li>Localisation et entreprise</li>
-                    <li>Caractéristiques du job</li>
+                    <li>Based on job type</li>
+                    <li>Location and company</li>
+                    <li>Job characteristics</li>
                 </ul>
                 <div class="d-grid gap-2">
                     {% if user.is_staff %}
                         <a href="{% url 'ml_app:classification_analysis' %}" class="btn btn-lg" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
-                            <i class="fas fa-chart-bar"></i> Voir l'Analyse
+                            <i class="fas fa-chart-bar"></i> View Analysis
                         </a>
                     {% endif %}
                     {% if user.is_authenticated %}
                         <a href="{% url 'ml_app:classification_predict' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-magic"></i> Prédire une Plateforme
+                            <i class="fas fa-magic"></i> Predict a Platform
                         </a>
                     {% else %}
                         <a href="{% url 'ml_app:login' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-sign-in-alt"></i> Connectez-vous pour prédire
+                            <i class="fas fa-sign-in-alt"></i> Log in to predict
                         </a>
                     {% endif %}
                 </div>
@@ -149,32 +149,32 @@
         <div class="card h-100">
             <div class="card-header" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
                 <h3 class="mb-0">
-                    <i class="fas fa-briefcase"></i> Classification des Types de Postes
+                    <i class="fas fa-briefcase"></i> Job Title Classification
                 </h3>
             </div>
             <div class="card-body">
                 <p class="card-text">
-                    Prédisez le type de poste (Data Analyst, Data Scientist, Data Engineer, etc.) basé sur :
+                    Predict the job type (Data Analyst, Data Scientist, Data Engineer, etc.) based on:
                 </p>
                 <ul>
-                    <li>Type de contrat (Full-time, Part-time)</li>
-                    <li>Secteur d'activité</li>
-                    <li>Plateforme de recrutement</li>
-                    <li>Nombre de compétences requises</li>
+                    <li>Contract type (Full-time, Part-time)</li>
+                    <li>Industry sector</li>
+                    <li>Recruitment platform</li>
+                    <li>Number of required skills</li>
                 </ul>
                 <div class="d-grid gap-2">
                     {% if user.is_staff %}
                         <a href="{% url 'ml_app:job_title_analysis' %}" class="btn btn-lg" style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white;">
-                            <i class="fas fa-chart-bar"></i> Voir l'Analyse
+                            <i class="fas fa-chart-bar"></i> View Analysis
                         </a>
                     {% endif %}
                     {% if user.is_authenticated %}
                         <a href="{% url 'ml_app:job_title_predict' %}" class="btn btn-outline-danger">
-                            <i class="fas fa-search"></i> Prédire un Type de Poste
+                            <i class="fas fa-search"></i> Predict a Job Type
                         </a>
                     {% else %}
                         <a href="{% url 'ml_app:login' %}" class="btn btn-outline-danger">
-                            <i class="fas fa-sign-in-alt"></i> Connectez-vous pour prédire
+                            <i class="fas fa-sign-in-alt"></i> Log in to predict
                         </a>
                     {% endif %}
                 </div>
@@ -190,32 +190,32 @@
         <div class="card h-100">
             <div class="card-header" style="background: linear-gradient(135deg, #667eea, #764ba2);">
                 <h3 class="mb-0">
-                    <i class="fas fa-chart-line"></i> Prévisions Temporelles
+                    <i class="fas fa-chart-line"></i> Time Series Forecast
                 </h3>
             </div>
             <div class="card-body">
                 <p class="card-text">
-                    Prédisez le nombre d'offres d'emploi pour les prochains mois avec une analyse temporelle avancée :
+                    Predict the number of job postings for upcoming months with advanced time series analysis:
                 </p>
                 <ul>
-                    <li>Décomposition STL (Tendance + Saisonnalité)</li>
-                    <li>Moyenne mobile (SMA) et modèles statistiques</li>
-                    <li>Prédictions de 1 à 12 mois</li>
-                    <li>Précision : MAPE ≈ 1.8% (Excellent)</li>
+                    <li>STL Decomposition (Trend + Seasonality)</li>
+                    <li>Simple Moving Average (SMA) and statistical models</li>
+                    <li>Predictions from 1 to 12 months</li>
+                    <li>Accuracy: MAPE ≈ 1.8% (Excellent)</li>
                 </ul>
                 <div class="d-grid gap-2">
                     {% if user.is_staff %}
                         <a href="{% url 'ml_app:forecast_analysis' %}" class="btn btn-lg" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
-                            <i class="fas fa-chart-bar"></i> Voir l'Analyse
+                            <i class="fas fa-chart-bar"></i> View Analysis
                         </a>
                     {% endif %}
                     {% if user.is_authenticated %}
                         <a href="{% url 'ml_app:forecast_predict' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-crystal-ball"></i> Prédire les Prochains Mois
+                            <i class="fas fa-crystal-ball"></i> Predict Upcoming Months
                         </a>
                     {% else %}
                         <a href="{% url 'ml_app:login' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-sign-in-alt"></i> Connectez-vous pour prédire
+                            <i class="fas fa-sign-in-alt"></i> Log in to predict
                         </a>
                     {% endif %}
                 </div>
@@ -231,32 +231,32 @@
         <div class="card h-100">
             <div class="card-header" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
                 <h3 class="mb-0">
-                    <i class="fas fa-user-clock"></i> Prédiction d'Expérience
+                    <i class="fas fa-user-clock"></i> Experience Prediction
                 </h3>
             </div>
             <div class="card-body">
                 <p class="card-text">
-                    Estimez les années d'expérience requises basées sur les caractéristiques du poste :
+                    Estimate required years of experience based on job characteristics:
                 </p>
                 <ul>
-                    <li>Industrie et niveau d'éducation</li>
-                    <li>Compétences requises</li>
-                    <li>Type d'emploi et taille d'entreprise</li>
-                    <li>Modèles: Linear, Random Forest, Gradient Boosting, SVR</li>
+                    <li>Industry and education level</li>
+                    <li>Required skills</li>
+                    <li>Employment type and company size</li>
+                    <li>Models: Linear, Random Forest, Gradient Boosting, SVR</li>
                 </ul>
                 <div class="d-grid gap-2">
                     {% if user.is_staff %}
                         <a href="{% url 'ml_app:experience_analysis' %}" class="btn btn-lg" style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white;">
-                            <i class="fas fa-chart-bar"></i> Voir l'Analyse
+                            <i class="fas fa-chart-bar"></i> View Analysis
                         </a>
                     {% endif %}
                     {% if user.is_authenticated %}
                         <a href="{% url 'ml_app:experience_predict' %}" class="btn btn-outline-danger">
-                            <i class="fas fa-graduation-cap"></i> Estimer l'Expérience
+                            <i class="fas fa-graduation-cap"></i> Estimate Experience
                         </a>
                     {% else %}
                         <a href="{% url 'ml_app:login' %}" class="btn btn-outline-danger">
-                            <i class="fas fa-sign-in-alt"></i> Connectez-vous pour prédire
+                            <i class="fas fa-sign-in-alt"></i> Log in to predict
                         </a>
                     {% endif %}
                 </div>
@@ -272,32 +272,32 @@
         <div class="card h-100">
             <div class="card-header" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
                 <h3 class="mb-0">
-                    <i class="fas fa-users-cog"></i> Profils d'Employés
+                    <i class="fas fa-users-cog"></i> Employee Profiles
                 </h3>
             </div>
             <div class="card-body">
                 <p class="card-text">
-                    Classifiez automatiquement les employés en profils Junior ou Senior :
+                    Automatically classify employees into Junior or Senior profiles:
                 </p>
                 <ul>
-                    <li>Basé sur salaire et années d'expérience</li>
-                    <li>Score des avantages et télétravail</li>
+                    <li>Based on salary and years of experience</li>
+                    <li>Benefits score and remote work</li>
                     <li>Clustering: KMeans, Agglomerative, DBSCAN</li>
-                    <li>Visualisations détaillées des profils</li>
+                    <li>Detailed profile visualizations</li>
                 </ul>
                 <div class="d-grid gap-2">
                     {% if user.is_staff %}
                         <a href="{% url 'ml_app:employee_clustering_analysis' %}" class="btn btn-lg" style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white;">
-                            <i class="fas fa-chart-bar"></i> Voir l'Analyse
+                            <i class="fas fa-chart-bar"></i> View Analysis
                         </a>
                     {% endif %}
                     {% if user.is_authenticated %}
                         <a href="{% url 'ml_app:employee_clustering_predict' %}" class="btn btn-outline-info">
-                            <i class="fas fa-user-tag"></i> Déterminer le Profil
+                            <i class="fas fa-user-tag"></i> Determine Profile
                         </a>
                     {% else %}
                         <a href="{% url 'ml_app:login' %}" class="btn btn-outline-info">
-                            <i class="fas fa-sign-in-alt"></i> Connectez-vous pour prédire
+                            <i class="fas fa-sign-in-alt"></i> Log in to predict
                         </a>
                     {% endif %}
                 </div>
@@ -313,32 +313,32 @@
         <div class="card h-100 border-0 shadow-lg">
             <div class="card-header" style="background: linear-gradient(135deg, #667eea, #764ba2);">
                 <h3 class="mb-0">
-                    <i class="fas fa-building"></i> Segmentation Entreprises
+                    <i class="fas fa-building"></i> Company Segmentation
                 </h3>
             </div>
             <div class="card-body">
                 <p class="card-text">
-                    Segmentez les entreprises selon leur profil et adoption IA:
+                    Segment companies by profile and AI adoption:
                 </p>
                 <ul>
-                    <li>Clustering K-Means (4 segments)</li>
-                    <li>Analyse par secteur, taille et IA</li>
-                    <li>Visualisation PCA des segments</li>
-                    <li>Profiling complet des clusters</li>
+                    <li>K-Means Clustering (4 segments)</li>
+                    <li>Analysis by sector, size and AI</li>
+                    <li>PCA visualization of segments</li>
+                    <li>Complete cluster profiling</li>
                 </ul>
                 <div class="d-grid gap-2">
                     {% if user.is_staff %}
                         <a href="{% url 'ml_app:company_profiling_analysis' %}" class="btn btn-lg" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
-                            <i class="fas fa-chart-bar"></i> Voir l'Analyse
+                            <i class="fas fa-chart-bar"></i> View Analysis
                         </a>
                     {% endif %}
                     {% if user.is_authenticated %}
                         <a href="{% url 'ml_app:company_profiling_predict' %}" class="btn btn-outline-primary">
-                            <i class="fas fa-building"></i> Identifier le Segment
+                            <i class="fas fa-building"></i> Identify Segment
                         </a>
                     {% else %}
                         <a href="{% url 'ml_app:login' %}" class="btn btn-outline-primary">
-                            <i class="fas fa-sign-in-alt"></i> Connectez-vous
+                            <i class="fas fa-sign-in-alt"></i> Log in
                         </a>
                     {% endif %}
                 </div>
@@ -354,32 +354,32 @@
         <div class="card h-100 border-0 shadow-lg">
             <div class="card-header" style="background: linear-gradient(135deg, #667eea, #764ba2);">
                 <h3 class="mb-0">
-                    <i class="fas fa-brain"></i> Clustering par Compétences
+                    <i class="fas fa-brain"></i> Skill-Based Clustering
                 </h3>
             </div>
             <div class="card-body">
                 <p class="card-text">
-                    Clustering basé sur les compétences techniques (skills) des jobs:
+                    Clustering based on technical skills of jobs:
                 </p>
                 <ul>
-                    <li>3 profils identifiés: Business/BI, Data Engineer, Data Scientist</li>
-                    <li>Analyse PCA et K-means (k=3)</li>
-                    <li>Top compétences par cluster</li>
-                    <li>Distribution des titres de jobs</li>
+                    <li>3 identified profiles: Business/BI, Data Engineer, Data Scientist</li>
+                    <li>PCA analysis and K-means (k=3)</li>
+                    <li>Top skills per cluster</li>
+                    <li>Job title distribution</li>
                 </ul>
                 <div class="d-grid gap-2">
                     {% if user.is_staff %}
                         <a href="{% url 'ml_app:job_skill_clustering_analysis' %}" class="btn btn-lg" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
-                            <i class="fas fa-chart-bar"></i> Voir l'Analyse
+                            <i class="fas fa-chart-bar"></i> View Analysis
                         </a>
                     {% endif %}
                     {% if user.is_authenticated %}
                         <a href="{% url 'ml_app:job_skill_clustering_predict' %}" class="btn btn-outline-info">
-                            <i class="fas fa-magic"></i> Identifier mon Profil
+                            <i class="fas fa-magic"></i> Identify My Profile
                         </a>
                     {% else %}
                         <a href="{% url 'ml_app:login' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-sign-in-alt"></i> Connectez-vous
+                            <i class="fas fa-sign-in-alt"></i> Log in
                         </a>
                     {% endif %}
                 </div>
@@ -395,32 +395,32 @@
         <div class="card h-100 border-0 shadow-lg">
             <div class="card-header" style="background: linear-gradient(135deg, #fa709a, #fee140);">
                 <h3 class="mb-0">
-                    <i class="fas fa-briefcase"></i> Analyse Emplois
+                    <i class="fas fa-briefcase"></i> Job Analysis
                 </h3>
             </div>
             <div class="card-body">
                 <p class="card-text">
-                    Régression de salaires et classification de profils IA:
+                    Salary regression and AI profile classification:
                 </p>
                 <ul>
-                    <li>Prédiction salaires: Linear + Random Forest</li>
-                    <li>Classification profil IA (High/Low)</li>
-                    <li>Analyse d'importance des features</li>
-                    <li>Métriques complètes (R², Accuracy)</li>
+                    <li>Salary prediction: Linear + Random Forest</li>
+                    <li>AI profile classification (High/Low)</li>
+                    <li>Feature importance analysis</li>
+                    <li>Complete metrics (R², Accuracy)</li>
                 </ul>
                 <div class="d-grid gap-2">
                     {% if user.is_staff %}
                         <a href="{% url 'ml_app:job_analysis_analysis' %}" class="btn btn-lg" style="background: linear-gradient(135deg, #fa709a, #fee140); color: white;">
-                            <i class="fas fa-chart-bar"></i> Voir l'Analyse
+                            <i class="fas fa-chart-bar"></i> View Analysis
                         </a>
                     {% endif %}
                     {% if user.is_authenticated %}
                         <a href="{% url 'ml_app:job_analysis_predict_ai_profile' %}" class="btn btn-outline-info">
-                            <i class="fas fa-robot"></i> Classifier Profil IA
+                            <i class="fas fa-robot"></i> Classify AI Profile
                         </a>
                     {% else %}
                         <a href="{% url 'ml_app:login' %}" class="btn btn-outline-warning">
-                            <i class="fas fa-sign-in-alt"></i> Connectez-vous
+                            <i class="fas fa-sign-in-alt"></i> Log in
                         </a>
                     {% endif %}
                 </div>
@@ -437,20 +437,20 @@
         <div class="card">
             <div class="card-header" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
                 <h3 class="mb-0">
-                    <i class="fas fa-info-circle"></i> À propos de cette application
+                    <i class="fas fa-info-circle"></i> About This Application
                 </h3>
             </div>
             <div class="card-body">
                 <!-- Technologies -->
                 <div class="mb-4">
-                    <h5 class="border-bottom pb-2"><i class="fas fa-cogs text-primary"></i> Technologies utilisées</h5>
+                    <h5 class="border-bottom pb-2"><i class="fas fa-cogs text-primary"></i> Technologies Used</h5>
                     <div class="row mt-3">
                         <div class="col-md-4 mb-3">
                             <div class="d-flex align-items-center">
                                 <i class="fab fa-python fa-2x text-success me-3"></i>
                                 <div>
                                     <strong>Django</strong><br>
-                                    <small class="text-muted">Framework web Python</small>
+                                    <small class="text-muted">Python web framework</small>
                                 </div>
                             </div>
                         </div>
@@ -468,7 +468,7 @@
                                 <i class="fas fa-table fa-2x text-warning me-3"></i>
                                 <div>
                                     <strong>Pandas & NumPy</strong><br>
-                                    <small class="text-muted">Traitement des données</small>
+                                    <small class="text-muted">Data processing</small>
                                 </div>
                             </div>
                         </div>
@@ -486,7 +486,7 @@
                                 <i class="fab fa-bootstrap fa-2x text-purple me-3"></i>
                                 <div>
                                     <strong>Bootstrap 5</strong><br>
-                                    <small class="text-muted">Interface utilisateur</small>
+                                    <small class="text-muted">User interface</small>
                                 </div>
                             </div>
                         </div>
@@ -495,16 +495,16 @@
                                 <i class="fas fa-database fa-2x text-secondary me-3"></i>
                                 <div>
                                     <strong>SQLite</strong><br>
-                                    <small class="text-muted">Base de données</small>
+                                    <small class="text-muted">Database</small>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Modèles ML -->
+                <!-- ML Models -->
                 <div class="mt-4">
-                    <h5 class="border-bottom pb-2"><i class="fas fa-robot text-success"></i> Modèles ML disponibles</h5>
+                    <h5 class="border-bottom pb-2"><i class="fas fa-robot text-success"></i> Available ML Models</h5>
                     <div class="row mt-3">
                         <div class="col-md-3 mb-3">
                             <div class="card bg-light h-100">
@@ -522,7 +522,7 @@
                         <div class="col-md-3 mb-3">
                             <div class="card bg-light h-100">
                                 <div class="card-body">
-                                    <h6 class="card-title text-success"><i class="fas fa-chart-line"></i> Régression</h6>
+                                    <h6 class="card-title text-success"><i class="fas fa-chart-line"></i> Regression</h6>
                                     <ul class="list-unstyled small mb-0">
                                         <li>• Linear & Polynomial</li>
                                         <li>• Decision Tree</li>
@@ -549,7 +549,7 @@
                         <div class="col-md-3 mb-3">
                             <div class="card bg-light h-100">
                                 <div class="card-body">
-                                    <h6 class="card-title text-warning"><i class="fas fa-calendar-alt"></i> Séries Temporelles</h6>
+                                    <h6 class="card-title text-warning"><i class="fas fa-calendar-alt"></i> Time Series</h6>
                                     <ul class="list-unstyled small mb-0">
                                         <li>• STL Decomposition</li>
                                         <li>• SMA + Saisonnalité</li>
@@ -570,21 +570,21 @@
         <div class="stats-card text-center">
             <i class="fas fa-project-diagram fa-3x mb-2"></i>
             <h3>9</h3>
-            <p>Modules ML</p>
+            <p>ML Modules</p>
         </div>
     </div>
     <div class="col-md-4">
         <div class="stats-card text-center" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
             <i class="fas fa-brain fa-3x mb-2"></i>
             <h3>30+</h3>
-            <p>Modèles ML</p>
+            <p>ML Models</p>
         </div>
     </div>
     <div class="col-md-4">
         <div class="stats-card text-center" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
             <i class="fas fa-chart-bar fa-3x mb-2"></i>
             <h3>30+</h3>
-            <p>Visualisations</p>
+            <p>Visualizations</p>
         </div>
     </div>
 </div>

@@ -1,7 +1,7 @@
 {% extends 'ml_app/base.html' %}
 {% load static %}
 
-{% block title %}Connexion{% endblock %}
+{% block title %}Login{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center mt-5">
@@ -9,7 +9,7 @@
         <div class="card shadow">
             <div class="card-body p-5">
                 <h2 class="text-center mb-4">
-                    <i class="fas fa-sign-in-alt text-primary"></i> Connexion
+                    <i class="fas fa-sign-in-alt text-primary"></i> Login
                 </h2>
 
                 {% if messages %}
@@ -24,22 +24,22 @@
                 <form method="post">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label for="username" class="form-label">Nom d'utilisateur</label>
+                        <label for="username" class="form-label">Username</label>
                         <input type="text" class="form-control" id="username" name="username" required>
                     </div>
                     <div class="mb-3">
-                        <label for="password" class="form-label">Mot de passe</label>
+                        <label for="password" class="form-label">Password</label>
                         <input type="password" class="form-control" id="password" name="password" required>
                     </div>
                     <button type="submit" class="btn btn-primary w-100 mb-3">
-                        <i class="fas fa-sign-in-alt"></i> Se connecter
+                        <i class="fas fa-sign-in-alt"></i> Log in
                     </button>
                 </form>
 
                 <hr>
 
                 <p class="text-center mb-0">
-                    Pas encore de compte? <a href="{% url 'ml_app:register' %}">S'inscrire</a>
+                    Don't have an account? <a href="{% url 'ml_app:register' %}">Register</a>
                 </p>
             </div>
         </div>

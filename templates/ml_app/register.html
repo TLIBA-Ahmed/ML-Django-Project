@@ -1,7 +1,7 @@
 {% extends 'ml_app/base.html' %}
 {% load static %}
 
-{% block title %}Inscription{% endblock %}
+{% block title %}Registration{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center mt-5">
@@ -9,7 +9,7 @@
         <div class="card shadow">
             <div class="card-body p-5">
                 <h2 class="text-center mb-4">
-                    <i class="fas fa-user-plus text-success"></i> Inscription
+                    <i class="fas fa-user-plus text-success"></i> Registration
                 </h2>
 
                 {% if messages %}
@@ -24,7 +24,7 @@
                 <form method="post">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label for="username" class="form-label">Nom d'utilisateur</label>
+                        <label for="username" class="form-label">Username</label>
                         <input type="text" class="form-control" id="username" name="username" required>
                     </div>
                     <div class="mb-3">
@@ -32,22 +32,22 @@
                         <input type="email" class="form-control" id="email" name="email" required>
                     </div>
                     <div class="mb-3">
-                        <label for="password" class="form-label">Mot de passe</label>
+                        <label for="password" class="form-label">Password</label>
                         <input type="password" class="form-control" id="password" name="password" required>
                     </div>
                     <div class="mb-3">
-                        <label for="password_confirm" class="form-label">Confirmer le mot de passe</label>
+                        <label for="password_confirm" class="form-label">Confirm password</label>
                         <input type="password" class="form-control" id="password_confirm" name="password_confirm" required>
                     </div>
                     <button type="submit" class="btn btn-success w-100 mb-3">
-                        <i class="fas fa-user-plus"></i> S'inscrire
+                        <i class="fas fa-user-plus"></i> Register
                     </button>
                 </form>
 
                 <hr>
 
                 <p class="text-center mb-0">
-                    Déjà inscrit? <a href="{% url 'ml_app:login' %}">Se connecter</a>
+                    Already registered? <a href="{% url 'ml_app:login' %}">Log in</a>
                 </p>
             </div>
         </div>
